@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env*
+!.env.example
+tmp/
+*.log
+*.tgz
+*.tar.gz
+qa-*.png
+implementation-*.png
+design-qa*.png

@@ -1,0 +1,213 @@
+{
+  "profile": {
+    "name": "Tang Keng Hin",
+    "portraitUrl": "/assets/tang-keng-hin.jpg",
+    "eyebrow": "Year 3 Computer Science / Cybersecurity",
+    "role": "Computer Science (Cybersecurity) Student",
+    "intro": "Building secure systems and intelligent solutions at the intersection of cybersecurity, backend development, cloud computing, and IT infrastructure.",
+    "availability": "Open to internship opportunities",
+    "availabilityDetail": "Actively seeking a 16+ week internship where I can contribute, learn, and grow with a dynamic technical team."
+  },
+  "about": {
+    "heading": "Curious. Disciplined. Security-Minded.",
+    "paragraphs": [
+      "A highly motivated Year 3 Computer Science student specializing in Cybersecurity, with a strong technical foundation in backend development, cloud computing, and IT infrastructure.",
+      "I possess a solid grasp of Data Structures and Algorithms and hands-on experience building practical solutions, including Java-based applications and a Python chatbot.",
+      "I am passionate about applying security-first concepts to develop robust, efficient, and user-centric software, and I am currently seeking an internship placement of 16+ weeks."
+    ],
+    "skills": [
+      "Cybersecurity",
+      "Backend Development",
+      "Cloud Computing",
+      "IT Infrastructure",
+      "DSA",
+      "Java",
+      "Python",
+      "SQL",
+      "Cisco",
+      "Kali Linux",
+      "GitHub",
+      "Figma"
+    ]
+  },
+  "projects": [
+    {
+      "id": "innolink",
+      "title": "innoLink Chatbot",
+      "description": "A Python chatbot designed to answer questions, retrieve useful information, and provide intelligent assistance.",
+      "tech": [
+        "Python",
+        "NLP",
+        "Chatbot"
+      ],
+      "url": "https://github.com/jingxuan0909"
+    },
+    {
+      "id": "mysafety",
+      "title": "MySafety",
+      "description": "A Java-based safety system designed to improve awareness and provide quick access to emergency resources.",
+      "tech": [
+        "Java",
+        "Application",
+        "Safety"
+      ],
+      "url": "https://github.com/jingxuan0909"
+    },
+    {
+      "id": "fitness-app",
+      "title": "Fitness Application",
+      "description": "A JavaFX fitness application that helps users plan workouts, monitor progress, and stay consistent.",
+      "tech": [
+        "Java",
+        "JavaFX",
+        "Fitness"
+      ],
+      "url": "https://github.com/jingxuan0909"
+    }
+  ],
+  "semesterResults": [
+    {
+      "semester": "1",
+      "gpa": "3.52"
+    },
+    {
+      "semester": "2",
+      "gpa": "3.43"
+    },
+    {
+      "semester": "2.5",
+      "gpa": "3.73"
+    },
+    {
+      "semester": "3",
+      "gpa": "3.02"
+    },
+    {
+      "semester": "4",
+      "gpa": "3.23"
+    },
+    {
+      "semester": "4.5",
+      "gpa": "3.50"
+    }
+  ],
+  "education": [
+    {
+      "institution": "Taylor's University",
+      "qualification": "Bachelor of Computer Science (Honours)",
+      "period": "January 2023 - January 2026"
+    },
+    {
+      "institution": "Confucian Private Secondary School",
+      "qualification": "UEC",
+      "period": "January 2018 - December 2023"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Sportsclick",
+      "role": "Shop Assistant",
+      "period": "March 2025 - May 2025",
+      "description": "Assisted customers, resolved product inquiries, managed stock arrangements, and processed sales transactions."
+    },
+    {
+      "company": "Crave World Trading Sdn Bhd",
+      "role": "Promoter",
+      "period": "December 2024 - January 2025",
+      "description": "Promoted products, managed sampling and inventory, and delivered high-quality customer service."
+    },
+    {
+      "company": "jinyeye",
+      "role": "Sales and Operations Assistant",
+      "period": "December 2023 - February 2024",
+      "description": "Handled customer inquiries, inventory, product displays, logistics, and order delivery schedules."
+    },
+    {
+      "company": "DEE Coffee",
+      "role": "Store Manager",
+      "period": "November 2022 - December 2022",
+      "description": "Managed daily store operations, customer transactions, hygiene standards, stock, and sales reporting."
+    }
+  ],
+  "extraCurricularActivities": [
+    {
+      "club": "Japanese Culture Society",
+      "position": "General Affairs",
+      "period": "January 2021 - November 2023",
+      "description": "Managed supplies, venue decoration, logistics, inventory, traditional costumes, cultural props, venue bookings, and equipment setup for weekly activities and the annual cultural workshop."
+    },
+    {
+      "club": "Chess Society",
+      "position": "Vice President",
+      "period": "January 2018 - October 2020",
+      "description": "Supported International Chess, Chinese Chess, and Go activities; recruited and trained members, coordinated competitions, liaised with teacher advisors, and built partnerships for joint campus events."
+    }
+  ],
+  "awards": [
+    {
+      "id": "deans-list-april-2024",
+      "title": "Dean's List Award",
+      "issuer": "Taylor's University",
+      "date": "April 2024",
+      "url": "/uploads/deans-list-april-2024.pdf"
+    },
+    {
+      "id": "deans-list-february-2025",
+      "title": "Dean's List Award",
+      "issuer": "Taylor's University",
+      "date": "February 2025",
+      "url": "/uploads/deans-list-february-2025.pdf"
+    },
+    {
+      "id": "deans-list-february-2026",
+      "title": "Dean's List Award",
+      "issuer": "Taylor's University",
+      "date": "February 2026",
+      "url": "/uploads/deans-list-february-2026.pdf"
+    }
+  ],
+  "certifications": [
+    {
+      "id": "aws-cloud-foundations",
+      "title": "Cloud Foundations",
+      "issuer": "AWS Academy",
+      "date": "October 2025",
+      "url": "/uploads/aws-cloud-foundations.pdf"
+    },
+    {
+      "id": "aws-cloud-security-foundations",
+      "title": "Cloud Security Foundations",
+      "issuer": "AWS Academy",
+      "date": "October 2025",
+      "url": "/uploads/aws-cloud-security-foundations.pdf"
+    },
+    {
+      "id": "cisco-packet-tracer",
+      "title": "Introduction to Packet Tracer",
+      "issuer": "Cisco Networking Academy",
+      "date": "December 2024",
+      "url": "/uploads/cisco-introduction-to-packet-tracer.pdf"
+    },
+    {
+      "id": "cisco-cybersecurity",
+      "title": "Introduction to Cybersecurity",
+      "issuer": "Cisco Networking Academy",
+      "date": "September 2025",
+      "url": "/uploads/cisco-introduction-to-cybersecurity.pdf"
+    },
+    {
+      "id": "cisco-ethical-hacker",
+      "title": "Ethical Hacker",
+      "issuer": "Cisco Networking Academy",
+      "date": "January 2026",
+      "url": "/uploads/cisco-ethical-hacker.pdf"
+    }
+  ],
+  "contact": {
+    "email": "kenghin0909@gmail.com",
+    "github": "https://github.com/jingxuan0909",
+    "linkedin": "https://www.linkedin.com/",
+    "facebook": "https://www.facebook.com/",
+    "whatsapp": "60107656355"
+  }
+}
