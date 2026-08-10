@@ -27,35 +27,49 @@ async function uploadFile(file) {
   return data.publicUrl;
 }
 
-function PortraitEditor({ value, onChange, setMessage }) {
+function normalizeExternalUrl(value) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return "";
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+function PortraitEditor({ value, onChange, onUploadComplete, setMessage }) {
   const [uploading, setUploading] = useState(false);
   async function upload(file) {
     if (!file) return;
     setUploading(true); setMessage("");
     try {
       const url = await uploadFile(file);
-      onChange(url); setMessage("Portrait uploaded successfully. Save all changes to publish it.");
+      onChange(url);
+      await onUploadComplete(url);
+      setMessage("Portrait uploaded and published successfully.");
     } catch (error) { setMessage(error.message); } finally { setUploading(false); }
   }
   return <div className="admin-portrait"><div className="admin-portrait__preview"><img src={value || "/assets/tang-keng-hin.jpg"} alt="Current portrait preview" /></div><div className="admin-portrait__controls"><Field label="Portrait image URL" value={value} onChange={onChange} /><p>Use a clear JPG, PNG, or WebP portrait. The same image appears across the portfolio.</p><label className="upload-button"><UploadSimple /> {uploading ? "Uploading…" : "Upload new portrait"}<input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => upload(event.target.files?.[0])} /></label></div></div>;
 }
 
-function DocumentEditor({ title, items, onChange, setMessage }) {
+function DocumentEditor({ title, items, onChange, onUploadComplete, setMessage }) {
   const [uploading, setUploading] = useState("");
+  const [uploadStatus, setUploadStatus] = useState("");
   function update(index, key, value) { onChange(items.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item)); }
   async function upload(index, file) {
     if (!file) return;
-    setUploading(items[index].id); setMessage("");
+    setUploading(items[index].id); setMessage(""); setUploadStatus("");
     try {
       const url = await uploadFile(file);
-      update(index, "url", url); setMessage("File uploaded successfully. Save all changes to publish it.");
-    } catch (error) { setMessage(error.message); } finally { setUploading(""); }
+      const nextItems = items.map((item, itemIndex) => itemIndex === index ? { ...item, url } : item);
+      onChange(nextItems);
+      await onUploadComplete(nextItems);
+      setUploadStatus("PDF/image uploaded and published successfully.");
+      setMessage("File uploaded and published successfully.");
+    } catch (error) { setUploadStatus(error.message); setMessage(error.message); } finally { setUploading(""); }
   }
-  return <section className="admin-card"><div className="admin-card__heading"><div><h2>{title}</h2><p>Add a PDF or image so visitors can open the original document.</p></div><button type="button" onClick={() => onChange([...items, { id: crypto.randomUUID(), title: `New ${title === "Awards" ? "award" : "certificate"}`, issuer: "", date: "", url: "" }])}><Plus /> Add</button></div>
+  return <section className="admin-card"><div className="admin-card__heading"><div><h2>{title}</h2><p>Add the entry first, complete its details, then upload a PDF/image. Successful uploads are published automatically.</p></div><button type="button" onClick={() => onChange([...items, { id: crypto.randomUUID(), title: `New ${title === "Awards" ? "award" : "certificate"}`, issuer: "", date: "", url: "" }])}><Plus /> Add</button></div>
     {items.map((item, index) => <article className="admin-repeat admin-document" key={item.id}>
-      <div className="admin-grid"><Field label="Title" value={item.title} onChange={(value) => update(index, "title", value)} /><Field label="Issuer" value={item.issuer} onChange={(value) => update(index, "issuer", value)} /><Field label="Date / period" value={item.date} onChange={(value) => update(index, "date", value)} /><Field label="Document URL" value={item.url} onChange={(value) => update(index, "url", value)} /></div>
+      <div className="admin-grid"><Field label="Title" value={item.title} onChange={(value) => update(index, "title", value)} /><Field label="Issuer" value={item.issuer} onChange={(value) => update(index, "issuer", value)} /><Field label="Date / period" value={item.date} onChange={(value) => update(index, "date", value)} /><Field label="Document URL (filled automatically after upload)" value={item.url} onChange={(value) => update(index, "url", value)} /></div>
       <div className="admin-document__actions"><label className="upload-button"><UploadSimple /> {uploading === item.id ? "Uploading…" : "Upload PDF / image"}<input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} onChange={(event) => upload(index, event.target.files?.[0])} /></label>{item.url && <a href={item.url} target="_blank" rel="noreferrer"><ArrowSquareOut /> Preview</a>}<button type="button" className="delete-button" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}><Trash /> Delete</button></div>
     </article>)}
+    {uploadStatus && <p className={uploadStatus.includes("successfully") ? "admin-message" : "admin-message admin-message--error"}>{uploadStatus}</p>}
   </section>;
 }
 
@@ -107,16 +121,33 @@ export function AdminPage() {
     setMessage(error ? error.message : "Password recovery email sent. Use only the newest email link.");
   }
 
+  async function persistContent(nextDraft, successMessage = "Changes saved successfully.") {
+    const normalizedDraft = {
+      ...nextDraft,
+      contact: {
+        ...nextDraft.contact,
+        github: normalizeExternalUrl(nextDraft.contact.github),
+        linkedin: normalizeExternalUrl(nextDraft.contact.linkedin),
+        facebook: normalizeExternalUrl(nextDraft.contact.facebook),
+      },
+    };
+    const { data, error } = await supabase
+      .from("portfolio_content")
+      .upsert({ id: 1, content: normalizedDraft, updated_at: new Date().toISOString() }, { onConflict: "id" })
+      .select("content")
+      .single();
+    if (error) throw error;
+    setDraft(structuredClone(data.content));
+    setContent(data.content);
+    await refresh();
+    setMessage(successMessage);
+    return data.content;
+  }
+
   async function save(event) {
     event.preventDefault(); setSaving(true); setMessage("");
     try {
-      const { data, error } = await supabase
-        .from("portfolio_content")
-        .upsert({ id: 1, content: draft, updated_at: new Date().toISOString() }, { onConflict: "id" })
-        .select("content")
-        .single();
-      if (error) throw error;
-      setContent(data.content); await refresh(); setMessage("Changes saved successfully.");
+      await persistContent(draft);
     } catch (error) { setMessage(error.message); } finally { setSaving(false); }
   }
 
@@ -127,16 +158,16 @@ export function AdminPage() {
   if (!session.authenticated) return <main className="admin-login"><div className="admin-login__panel"><Link to="/"><ArrowLeft /> Back to portfolio</Link><span className="eyebrow">Private access</span><h1>Content Admin</h1><p>Sign in with your Supabase Admin account.</p>{!isSupabaseConfigured && <p className="admin-message admin-message--error">Supabase environment variables are missing.</p>}<form onSubmit={login} autoComplete="off"><Field label="Email" type="email" autoComplete="off" value={credentials.email} onChange={(email) => setCredentials({ ...credentials, email })} /><Field label="Password" type="password" autoComplete="off" value={credentials.password} onChange={(password) => setCredentials({ ...credentials, password })} />{message && <p className={message.includes("sent") ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}<button className="button button--primary" type="submit" disabled={!isSupabaseConfigured}>Sign in</button><button className="button button--ghost" type="button" onClick={requestPasswordReset} disabled={!isSupabaseConfigured}>Forgot password?</button></form></div></main>;
   if (!draft) return null;
 
-  return <main className="admin-page"><header className="admin-header"><div><span className="eyebrow">Private workspace</span><h1>Portfolio Content</h1></div><div><Link className="button button--ghost" to="/"><ArrowLeft /> View site</Link><button className="button button--ghost" type="button" onClick={logout}><SignOut /> Log out</button></div></header>
-    <form className="admin-form" onSubmit={save}>
-      <section className="admin-card"><h2>Profile</h2><PortraitEditor value={draft.profile.portraitUrl} setMessage={setMessage} onChange={(value) => updateSection("profile", "portraitUrl", value)} /><div className="admin-grid"><Field label="Name" value={draft.profile.name} onChange={(value) => updateSection("profile", "name", value)} /><Field label="Role" value={draft.profile.role} onChange={(value) => updateSection("profile", "role", value)} /><Field label="Hero eyebrow" value={draft.profile.eyebrow} onChange={(value) => updateSection("profile", "eyebrow", value)} /><Field label="Availability" value={draft.profile.availability} onChange={(value) => updateSection("profile", "availability", value)} /><Field label="Intro" multiline value={draft.profile.intro} onChange={(value) => updateSection("profile", "intro", value)} /><Field label="Availability detail" multiline value={draft.profile.availabilityDetail} onChange={(value) => updateSection("profile", "availabilityDetail", value)} /></div></section>
+  return <main className="admin-page"><header className="admin-header"><div><span className="eyebrow">Private workspace</span><h1>Portfolio Content</h1></div><div><button className="button button--primary" type="submit" form="admin-content-form" disabled={saving}><FloppyDisk /> {saving ? "Saving…" : "Save changes"}</button><Link className="button button--ghost" to="/"><ArrowLeft /> View site</Link><button className="button button--ghost" type="button" onClick={logout}><SignOut /> Log out</button></div></header>
+    <form id="admin-content-form" className="admin-form" onSubmit={save}>
+      <section className="admin-card"><h2>Profile</h2><PortraitEditor value={draft.profile.portraitUrl} setMessage={setMessage} onChange={(value) => updateSection("profile", "portraitUrl", value)} onUploadComplete={(value) => persistContent({ ...draft, profile: { ...draft.profile, portraitUrl: value } }, "Portrait uploaded and published successfully.")} /><div className="admin-grid"><Field label="Name" value={draft.profile.name} onChange={(value) => updateSection("profile", "name", value)} /><Field label="Role" value={draft.profile.role} onChange={(value) => updateSection("profile", "role", value)} /><Field label="Hero eyebrow" value={draft.profile.eyebrow} onChange={(value) => updateSection("profile", "eyebrow", value)} /><Field label="Availability" value={draft.profile.availability} onChange={(value) => updateSection("profile", "availability", value)} /><Field label="Intro" multiline value={draft.profile.intro} onChange={(value) => updateSection("profile", "intro", value)} /><Field label="Availability detail" multiline value={draft.profile.availabilityDetail} onChange={(value) => updateSection("profile", "availabilityDetail", value)} /></div></section>
       <section className="admin-card"><h2>About</h2><Field label="Heading" value={draft.about.heading} onChange={(value) => updateSection("about", "heading", value)} />{draft.about.paragraphs.map((paragraph, index) => <Field key={index} label={`Paragraph ${index + 1}`} multiline value={paragraph} onChange={(value) => updateSection("about", "paragraphs", draft.about.paragraphs.map((item, itemIndex) => itemIndex === index ? value : item))} />)}</section>
       <ListEditor title="Skills" items={draft.about.skills} onChange={(value) => updateSection("about", "skills", value)} />
       <section className="admin-card"><div className="admin-card__heading"><h2>Projects</h2><button type="button" onClick={() => setDraft({ ...draft, projects: [...draft.projects, { id: crypto.randomUUID(), title: "New project", description: "", tech: [], url: draft.contact.github }] })}><Plus /> Add project</button></div>{draft.projects.map((project, index) => <article className="admin-repeat" key={project.id}><div className="admin-grid"><Field label="Title" value={project.title} onChange={(value) => updateArray("projects", index, "title", value)} /><Field label="Project URL" value={project.url} onChange={(value) => updateArray("projects", index, "url", value)} /><Field label="Description" multiline value={project.description} onChange={(value) => updateArray("projects", index, "description", value)} /><Field label="Technologies (comma separated)" value={project.tech.join(", ")} onChange={(value) => updateArray("projects", index, "tech", value.split(",").map((item) => item.trim()).filter(Boolean))} /></div><button type="button" className="delete-button" onClick={() => setDraft({ ...draft, projects: draft.projects.filter((_, itemIndex) => itemIndex !== index) })}><Trash /> Delete project</button></article>)}</section>
       <section className="admin-card"><div className="admin-card__heading"><h2>Semester Results</h2><button type="button" onClick={() => setDraft({ ...draft, semesterResults: [...draft.semesterResults, { semester: "", gpa: "" }] })}><Plus /> Add result</button></div><div className="admin-results">{draft.semesterResults.map((result, index) => <div key={index}><Field label="Semester" value={result.semester} onChange={(value) => updateArray("semesterResults", index, "semester", value)} /><Field label="GPA" value={result.gpa} onChange={(value) => updateArray("semesterResults", index, "gpa", value)} /><button type="button" className="icon-button" onClick={() => setDraft({ ...draft, semesterResults: draft.semesterResults.filter((_, itemIndex) => itemIndex !== index) })}><Trash /></button></div>)}</div></section>
-      <section className="admin-card"><h2>Contact</h2><div className="admin-grid"><Field label="Gmail address" type="email" value={draft.contact.email} onChange={(value) => updateSection("contact", "email", value)} /><Field label="GitHub URL" value={draft.contact.github} onChange={(value) => updateSection("contact", "github", value)} /><Field label="LinkedIn URL (optional)" value={draft.contact.linkedin} onChange={(value) => updateSection("contact", "linkedin", value)} /><Field label="Facebook URL" value={draft.contact.facebook} onChange={(value) => updateSection("contact", "facebook", value)} /><Field label="WhatsApp number (country code, no +)" value={draft.contact.whatsapp} onChange={(value) => updateSection("contact", "whatsapp", value.replace(/\D/g, ""))} /></div></section>
-      <DocumentEditor title="Awards" items={draft.awards} setMessage={setMessage} onChange={(items) => setDraft((current) => ({ ...current, awards: items }))} />
-      <DocumentEditor title="Certificates" items={draft.certifications} setMessage={setMessage} onChange={(items) => setDraft((current) => ({ ...current, certifications: items }))} />
+      <section className="admin-card"><h2>Contact</h2><p className="admin-card__hint">Save once here to update the footer, Home contact panel, and Contact page together.</p><div className="admin-grid"><Field label="Gmail address" type="email" value={draft.contact.email} onChange={(value) => updateSection("contact", "email", value)} /><Field label="GitHub URL" value={draft.contact.github} onChange={(value) => updateSection("contact", "github", value)} /><Field label="LinkedIn URL (optional)" value={draft.contact.linkedin} onChange={(value) => updateSection("contact", "linkedin", value)} /><Field label="Facebook URL" value={draft.contact.facebook} onChange={(value) => updateSection("contact", "facebook", value)} /><Field label="WhatsApp number (country code, no +)" value={draft.contact.whatsapp} onChange={(value) => updateSection("contact", "whatsapp", value.replace(/\D/g, ""))} /></div></section>
+      <DocumentEditor title="Awards" items={draft.awards} setMessage={setMessage} onChange={(items) => setDraft((current) => ({ ...current, awards: items }))} onUploadComplete={(items) => persistContent({ ...draft, awards: items }, "Award document uploaded and published successfully.")} />
+      <DocumentEditor title="Certificates" items={draft.certifications} setMessage={setMessage} onChange={(items) => setDraft((current) => ({ ...current, certifications: items }))} onUploadComplete={(items) => persistContent({ ...draft, certifications: items }, "Certificate uploaded and published successfully.")} />
       <div className="admin-save">{message && <p className={message.includes("successfully") ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}<button className="button button--primary" type="submit" disabled={saving}><FloppyDisk /> {saving ? "Saving…" : "Save all changes"}</button></div>
     </form>
   </main>;
