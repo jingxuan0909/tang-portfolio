@@ -41,8 +41,8 @@ export function HomePage() {
       <section className="home-grid section-wrap">
         <motion.div className="about-preview" {...reveal}>
           <span className="eyebrow">About me</span><h2>{about.heading}</h2>
-          {about.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-          <div className="skill-cloud">{about.skills.map((skill) => <span key={skill}>{skill}</span>)}</div>
+          {about.paragraphs.map((paragraph, index) => <p key={`home-about-${index}`}>{paragraph}</p>)}
+          <div className="skill-cloud">{about.skills.map((skill, index) => <span key={`home-skill-${index}`}>{skill}</span>)}</div>
         </motion.div>
         <motion.div className="project-preview" {...reveal} transition={{ ...reveal.transition, delay: .1 }}>
           <span className="eyebrow">Projects</span><h2>Recent Projects</h2>
@@ -59,13 +59,13 @@ export function HomePage() {
 
       <motion.section className="results section-wrap" {...reveal}>
         <span className="eyebrow">Semester results</span><h2>Academic Progress</h2>
-        <div className="results-grid">{semesterResults.map((result) => <article key={`${result.semester}-${result.gpa}`}><Trophy size={22} weight="duotone" /><small>Semester {result.semester}</small><strong>{result.gpa}</strong><span>GPA</span></article>)}</div>
+        <div className="results-grid">{semesterResults.map((result, index) => <article key={`${result.semester}-${index}`}><Trophy size={22} weight="duotone" /><small>Semester {result.semester}</small><strong>{result.gpa}</strong><span>GPA</span></article>)}</div>
         <p>Consistent progress. Continuous growth.</p>
       </motion.section>
 
       <motion.section className="home-experience section-wrap" {...reveal}>
         <div className="section-heading"><div><span className="eyebrow">Experience</span><h2>Practical Experience</h2></div><Link className="text-link" to="/resume">View full resume <ArrowRight /></Link></div>
-        <div className="experience-grid">{content.experience.map((item) => <article className="experience-card" key={`${item.company}-${item.period}`}><span className="experience-card__icon"><Briefcase size={23} weight="duotone" /></span><small>{item.period}</small><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</div>
+        <div className="experience-grid">{content.experience.map((item, index) => <article className="experience-card" key={item.id || `${item.company}-${index}`}><span className="experience-card__icon"><Briefcase size={23} weight="duotone" /></span><small>{item.period}</small><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</div>
       </motion.section>
 
       <motion.section className="home-credentials section-wrap" {...reveal}>
@@ -92,7 +92,7 @@ export function AboutPage() {
   return <Layout><PageIntro eyebrow="About" title={content.about.heading}><p>{content.about.paragraphs[0]}</p></PageIntro>
     <section className="content-section two-column">
       <motion.div className="portrait-secondary" {...reveal}><img src={content.profile.portraitUrl || "/assets/tang-keng-hin.jpg"} alt="Tang Keng Hin" /></motion.div>
-      <motion.div className="prose" {...reveal}>{content.about.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<h2>What I work with</h2><div className="skill-cloud skill-cloud--large">{content.about.skills.map((skill) => <span key={skill}>{skill}</span>)}</div></motion.div>
+      <motion.div className="prose" {...reveal}>{content.about.paragraphs.map((paragraph, index) => <p key={`about-${index}`}>{paragraph}</p>)}<h2>What I work with</h2><div className="skill-cloud skill-cloud--large">{content.about.skills.map((skill, index) => <span key={`about-skill-${index}`}>{skill}</span>)}</div></motion.div>
     </section>
   </Layout>;
 }
@@ -102,12 +102,12 @@ export function ResumePage() {
   if (!content) return <LoadingScreen />;
   return <Layout><PageIntro eyebrow="Resume" title="Experience, education, and skills"><p>{content.profile.intro}</p></PageIntro>
     <section className="content-section resume-layout">
-      <motion.div className="resume-block" {...reveal}><h2><Trophy /> Semester Results</h2><div className="result-table">{content.semesterResults.map((item) => <div key={item.semester}><span>Semester {item.semester}</span><strong>{item.gpa}</strong></div>)}</div></motion.div>
-      <motion.div className="resume-block" {...reveal}><h2><GraduationCap /> Education</h2>{content.education.map((item) => <article className="timeline-item" key={item.institution}><span>{item.period}</span><h3>{item.institution}</h3><p>{item.qualification}</p></article>)}</motion.div>
-      <motion.div className="resume-block resume-block--wide" {...reveal}><h2>Experience</h2>{content.experience.map((item) => <article className="timeline-item" key={`${item.company}-${item.period}`}><span>{item.period}</span><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</motion.div>
-      <motion.div className="resume-block resume-block--wide" {...reveal}><h2><UsersThree /> Extra Curricular Activities</h2>{content.extraCurricularActivities.map((item) => <article className="timeline-item" key={`${item.club}-${item.period}`}><span>{item.period}</span><h3>{item.club}</h3><strong>{item.position}</strong><p>{item.description}</p></article>)}</motion.div>
+      <motion.div className="resume-block" {...reveal}><h2><Trophy /> Semester Results</h2><div className="result-table">{content.semesterResults.map((item, index) => <div key={`${item.semester}-${index}`}><span>Semester {item.semester}</span><strong>{item.gpa}</strong></div>)}</div></motion.div>
+      <motion.div className="resume-block" {...reveal}><h2><GraduationCap /> Education</h2>{content.education.map((item, index) => <article className="timeline-item" key={item.id || `${item.institution}-${index}`}><span>{item.period}</span><h3>{item.institution}</h3><p>{item.qualification}</p></article>)}</motion.div>
+      <motion.div className="resume-block resume-block--wide" {...reveal}><h2>Experience</h2>{content.experience.map((item, index) => <article className="timeline-item" key={item.id || `${item.company}-${index}`}><span>{item.period}</span><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</motion.div>
+      <motion.div className="resume-block resume-block--wide" {...reveal}><h2><UsersThree /> Extra Curricular Activities</h2>{content.extraCurricularActivities.map((item, index) => <article className="timeline-item" key={item.id || `${item.club}-${index}`}><span>{item.period}</span><h3>{item.club}</h3><strong>{item.position}</strong><p>{item.description}</p></article>)}</motion.div>
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Briefcase /> Projects</h2><div className="resume-project-grid">{content.projects.map((project, index) => { const Icon = projectIcons[index % projectIcons.length]; return <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><span className="project-row__icon"><Icon size={28} weight="duotone" /></span><span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowSquareOut size={20} /></a>; })}</div></motion.div>
-      <motion.div className="resume-block" {...reveal}><h2>Skills</h2><div className="skill-cloud skill-cloud--large">{content.about.skills.map((skill) => <span key={skill}>{skill}</span>)}</div></motion.div>
+      <motion.div className="resume-block" {...reveal}><h2>Skills</h2><div className="skill-cloud skill-cloud--large">{content.about.skills.map((skill, index) => <span key={`resume-skill-${index}`}>{skill}</span>)}</div></motion.div>
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Trophy /> Awards</h2><p className="credential-intro">Select an award to view the original letter.</p><CredentialCards items={content.awards} /></motion.div>
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Certificate /> Certificates</h2><p className="credential-intro">Select a certificate to view the verified document.</p><CredentialCards items={content.certifications} /></motion.div>
     </section>

@@ -196,7 +196,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .admin-login form { display: grid; gap: 18px; margin-top: 28px; }
 .admin-field { display: grid; gap: 8px; width: 100%; }
 .admin-field > span { color: #aab8d4; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
-.admin-field input, .admin-field textarea, .admin-list input { width: 100%; border: 1px solid var(--line); background: #07142f; color: #f7f1ea; padding: 13px 14px; border-radius: 6px; resize: vertical; }
+.admin-field input, .admin-field textarea, .admin-list input, .admin-list textarea { width: 100%; border: 1px solid var(--line); background: #07142f; color: #f7f1ea; padding: 13px 14px; border-radius: 6px; resize: vertical; }
 .admin-field textarea { min-height: 110px; line-height: 1.5; }
 .admin-portrait { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 24px; align-items: center; margin-bottom: 28px; padding: 18px; border: 1px solid var(--line); background: #07142f; border-radius: 8px; }
 .admin-portrait__preview { width: 170px; aspect-ratio: .82; padding: 6px; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 42% 42% 34% 34% / 17% 17% 25% 25%; }
@@ -220,6 +220,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .admin-grid + .admin-field, .admin-card > .admin-field + .admin-field { margin-top: 18px; }
 .admin-list { display: grid; gap: 10px; }
 .admin-list__row { display: grid; grid-template-columns: 1fr 44px; gap: 8px; }
+.admin-list__row--multiline { align-items: stretch; }
 .icon-button { display: grid; place-items: center; border: 1px solid var(--line); color: #ff9b8d; background: #07142f; border-radius: 6px; cursor: pointer; }
 .admin-repeat { padding: 24px 0; border-top: 1px solid var(--line); }
 .admin-repeat:first-of-type { border-top: 0; }
