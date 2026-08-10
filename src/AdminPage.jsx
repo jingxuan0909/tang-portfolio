@@ -4,11 +4,9 @@ import { Link } from "react-router-dom";
 import { useContent } from "./content-context";
 import { isSupabaseConfigured, supabase } from "./supabase";
 
-const ADMIN_EMAIL = "kenghin0909@gmail.com";
-
-function Field({ label, value, onChange, multiline = false, type = "text" }) {
+function Field({ label, value, onChange, multiline = false, type = "text", autoComplete }) {
   const Component = multiline ? "textarea" : "input";
-  return <label className="admin-field"><span>{label}</span><Component type={multiline ? undefined : type} value={value ?? ""} onChange={(event) => onChange(event.target.value)} rows={multiline ? 4 : undefined} /></label>;
+  return <label className="admin-field"><span>{label}</span><Component type={multiline ? undefined : type} value={value ?? ""} onChange={(event) => onChange(event.target.value)} rows={multiline ? 4 : undefined} autoComplete={autoComplete} /></label>;
 }
 
 function ListEditor({ title, items, onChange }) {
@@ -65,7 +63,7 @@ export function AdminPage() {
   const { content, setContent, refresh } = useContent();
   const [session, setSession] = useState({ loading: true, authenticated: false });
   const [draft, setDraft] = useState(null);
-  const [credentials, setCredentials] = useState({ email: ADMIN_EMAIL, password: "" });
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -87,7 +85,7 @@ export function AdminPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword(credentials);
       if (error) throw error;
-      setSession({ loading: false, authenticated: true }); setCredentials({ email: ADMIN_EMAIL, password: "" });
+      setSession({ loading: false, authenticated: true }); setCredentials({ email: "", password: "" });
     } catch (error) { setMessage(error.message); }
   }
 
@@ -98,7 +96,11 @@ export function AdminPage() {
 
   async function requestPasswordReset() {
     setMessage("");
-    const email = credentials.email || ADMIN_EMAIL;
+    const email = credentials.email.trim();
+    if (!email) {
+      setMessage("Enter your Admin email first.");
+      return;
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
@@ -122,7 +124,7 @@ export function AdminPage() {
   function updateArray(section, index, key, value) { setDraft((current) => ({ ...current, [section]: current[section].map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item) })); }
 
   if (session.loading || !content) return <div className="admin-loading">Checking secure session…</div>;
-  if (!session.authenticated) return <main className="admin-login"><div className="admin-login__panel"><Link to="/"><ArrowLeft /> Back to portfolio</Link><span className="eyebrow">Private access</span><h1>Content Admin</h1><p>Sign in with your Supabase Admin account.</p>{!isSupabaseConfigured && <p className="admin-message admin-message--error">Supabase environment variables are missing.</p>}<form onSubmit={login}><Field label="Email" type="email" value={credentials.email} onChange={(email) => setCredentials({ ...credentials, email })} /><Field label="Password" type="password" value={credentials.password} onChange={(password) => setCredentials({ ...credentials, password })} />{message && <p className={message.includes("sent") ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}<button className="button button--primary" type="submit" disabled={!isSupabaseConfigured}>Sign in</button><button className="button button--ghost" type="button" onClick={requestPasswordReset} disabled={!isSupabaseConfigured}>Forgot password?</button></form></div></main>;
+  if (!session.authenticated) return <main className="admin-login"><div className="admin-login__panel"><Link to="/"><ArrowLeft /> Back to portfolio</Link><span className="eyebrow">Private access</span><h1>Content Admin</h1><p>Sign in with your Supabase Admin account.</p>{!isSupabaseConfigured && <p className="admin-message admin-message--error">Supabase environment variables are missing.</p>}<form onSubmit={login} autoComplete="off"><Field label="Email" type="email" autoComplete="off" value={credentials.email} onChange={(email) => setCredentials({ ...credentials, email })} /><Field label="Password" type="password" autoComplete="off" value={credentials.password} onChange={(password) => setCredentials({ ...credentials, password })} />{message && <p className={message.includes("sent") ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}<button className="button button--primary" type="submit" disabled={!isSupabaseConfigured}>Sign in</button><button className="button button--ghost" type="button" onClick={requestPasswordReset} disabled={!isSupabaseConfigured}>Forgot password?</button></form></div></main>;
   if (!draft) return null;
 
   return <main className="admin-page"><header className="admin-header"><div><span className="eyebrow">Private workspace</span><h1>Portfolio Content</h1></div><div><Link className="button button--ghost" to="/"><ArrowLeft /> View site</Link><button className="button button--ghost" type="button" onClick={logout}><SignOut /> Log out</button></div></header>
