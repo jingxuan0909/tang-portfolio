@@ -164,7 +164,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .footer { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 58px 0 32px; display: grid; grid-template-columns: 1.6fr .65fr .8fr; gap: 70px; border-top: 1px solid var(--line-strong); }
 .footer__profile { display: grid; grid-template-columns: 76px 1fr; gap: 20px; align-items: start; }
-.footer__profile img { width: 76px; height: 76px; object-fit: cover; object-position: top; border: 1px solid var(--line-strong); filter: grayscale(.72) sepia(.12) saturate(.76) contrast(1.06) brightness(.9) hue-rotate(168deg); }
+.footer__profile img { width: 76px; height: 76px; object-fit: cover; object-position: 50% 18%; border: 1px solid rgba(255, 128, 111, .62); border-radius: 10px; box-shadow: 0 12px 30px rgba(4, 11, 35, .32); filter: none; }
 .footer__profile strong { display: block; font: 600 26px var(--serif); }
 .footer__profile span { color: var(--coral); font-size: 13px; }
 .footer__profile p { max-width: 280px; margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
