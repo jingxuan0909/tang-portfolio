@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { AdminPage } from "./AdminPage";
 import { ContentProvider } from "./content-context";
 import { AboutPage, ContactPage, HomePage, ResumePage } from "./pages";
+import { ResetPasswordPage } from "./ResetPasswordPage";
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -15,6 +16,7 @@ function AnimatedRoutes() {
       <Route path="/resume" element={<ResumePage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/admin" element={<AdminPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<HomePage />} />
     </Routes>
   </motion.div></AnimatePresence>;

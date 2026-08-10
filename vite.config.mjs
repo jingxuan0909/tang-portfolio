@@ -4,9 +4,10 @@ import { contentApiPlugin } from "./server/content-api.mjs";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  const isVercelBuild = mode === "vercel";
   return {
     build: {
-      outDir: "dist/client",
+      outDir: isVercelBuild ? "dist" : "dist/client",
     },
     optimizeDeps: {
       include: ["react", "react-dom/client"],

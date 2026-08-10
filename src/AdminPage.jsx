@@ -2,13 +2,9 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowSquareOut, FloppyDisk, Plus, SignOut, Trash, UploadSimple } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { useContent } from "./content-context";
+import { isSupabaseConfigured, supabase } from "./supabase";
 
-async function api(url, options = {}) {
-  const response = await fetch(url, { ...options, headers: { "Content-Type": "application/json", ...(options.headers || {}) } });
-  const body = await response.json();
-  if (!response.ok) throw new Error(body.error || "Request failed");
-  return body;
-}
+const ADMIN_EMAIL = "kenghin0909@gmail.com";
 
 function Field({ label, value, onChange, multiline = false, type = "text" }) {
   const Component = multiline ? "textarea" : "input";
@@ -21,34 +17,39 @@ function ListEditor({ title, items, onChange }) {
   </section>;
 }
 
-async function uploadFile(file, csrf) {
-  const response = await fetch("/api/uploads", { method: "POST", headers: { "Content-Type": file.type, "x-csrf-token": csrf }, body: file });
-  const body = await response.json();
-  if (!response.ok) throw new Error(body.error || "Upload failed");
-  return body.url;
+async function uploadFile(file) {
+  const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+  if (!allowedTypes.includes(file.type)) throw new Error("Only PDF, JPG, PNG, and WebP files are allowed.");
+  if (file.size > 10 * 1024 * 1024) throw new Error("File must be 10 MB or smaller.");
+  const extension = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "bin";
+  const path = `${new Date().getFullYear()}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+  const { error } = await supabase.storage.from("portfolio-files").upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw error;
+  const { data } = supabase.storage.from("portfolio-files").getPublicUrl(path);
+  return data.publicUrl;
 }
 
-function PortraitEditor({ value, onChange, csrf, setMessage }) {
+function PortraitEditor({ value, onChange, setMessage }) {
   const [uploading, setUploading] = useState(false);
   async function upload(file) {
     if (!file) return;
     setUploading(true); setMessage("");
     try {
-      const url = await uploadFile(file, csrf);
+      const url = await uploadFile(file);
       onChange(url); setMessage("Portrait uploaded successfully. Save all changes to publish it.");
     } catch (error) { setMessage(error.message); } finally { setUploading(false); }
   }
   return <div className="admin-portrait"><div className="admin-portrait__preview"><img src={value || "/assets/tang-keng-hin.jpg"} alt="Current portrait preview" /></div><div className="admin-portrait__controls"><Field label="Portrait image URL" value={value} onChange={onChange} /><p>Use a clear JPG, PNG, or WebP portrait. The same image appears across the portfolio.</p><label className="upload-button"><UploadSimple /> {uploading ? "Uploading…" : "Upload new portrait"}<input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => upload(event.target.files?.[0])} /></label></div></div>;
 }
 
-function DocumentEditor({ title, items, onChange, csrf, setMessage }) {
+function DocumentEditor({ title, items, onChange, setMessage }) {
   const [uploading, setUploading] = useState("");
   function update(index, key, value) { onChange(items.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item)); }
   async function upload(index, file) {
     if (!file) return;
     setUploading(items[index].id); setMessage("");
     try {
-      const url = await uploadFile(file, csrf);
+      const url = await uploadFile(file);
       update(index, "url", url); setMessage("File uploaded successfully. Save all changes to publish it.");
     } catch (error) { setMessage(error.message); } finally { setUploading(""); }
   }
@@ -62,35 +63,58 @@ function DocumentEditor({ title, items, onChange, csrf, setMessage }) {
 
 export function AdminPage() {
   const { content, setContent, refresh } = useContent();
-  const [session, setSession] = useState({ loading: true, authenticated: false, csrf: "" });
+  const [session, setSession] = useState({ loading: true, authenticated: false });
   const [draft, setDraft] = useState(null);
-  const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [credentials, setCredentials] = useState({ email: ADMIN_EMAIL, password: "" });
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    api("/api/auth/session").then((result) => setSession({ loading: false, ...result })).catch(() => setSession({ loading: false, authenticated: false, csrf: "" }));
+    if (!supabase) {
+      setSession({ loading: false, authenticated: false });
+      return undefined;
+    }
+    supabase.auth.getSession().then(({ data }) => setSession({ loading: false, authenticated: Boolean(data.session) }));
+    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession({ loading: false, authenticated: Boolean(nextSession) });
+    });
+    return () => data.subscription.unsubscribe();
   }, []);
   useEffect(() => { if (content && !draft) setDraft(structuredClone(content)); }, [content, draft]);
 
   async function login(event) {
     event.preventDefault(); setMessage("");
     try {
-      const result = await api("/api/auth/login", { method: "POST", body: JSON.stringify(credentials) });
-      setSession({ loading: false, ...result }); setCredentials({ username: "", password: "" });
+      const { error } = await supabase.auth.signInWithPassword(credentials);
+      if (error) throw error;
+      setSession({ loading: false, authenticated: true }); setCredentials({ email: ADMIN_EMAIL, password: "" });
     } catch (error) { setMessage(error.message); }
   }
 
   async function logout() {
-    await api("/api/auth/logout", { method: "POST" });
-    setSession({ loading: false, authenticated: false, csrf: "" }); setDraft(null);
+    await supabase.auth.signOut();
+    setSession({ loading: false, authenticated: false }); setDraft(null);
+  }
+
+  async function requestPasswordReset() {
+    setMessage("");
+    const email = credentials.email || ADMIN_EMAIL;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setMessage(error ? error.message : "Password recovery email sent. Use only the newest email link.");
   }
 
   async function save(event) {
     event.preventDefault(); setSaving(true); setMessage("");
     try {
-      const result = await api("/api/content", { method: "PUT", headers: { "x-csrf-token": session.csrf }, body: JSON.stringify(draft) });
-      setContent(result.content); await refresh(); setMessage("Changes saved successfully.");
+      const { data, error } = await supabase
+        .from("portfolio_content")
+        .upsert({ id: 1, content: draft, updated_at: new Date().toISOString() }, { onConflict: "id" })
+        .select("content")
+        .single();
+      if (error) throw error;
+      setContent(data.content); await refresh(); setMessage("Changes saved successfully.");
     } catch (error) { setMessage(error.message); } finally { setSaving(false); }
   }
 
@@ -98,19 +122,19 @@ export function AdminPage() {
   function updateArray(section, index, key, value) { setDraft((current) => ({ ...current, [section]: current[section].map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item) })); }
 
   if (session.loading || !content) return <div className="admin-loading">Checking secure session…</div>;
-  if (!session.authenticated) return <main className="admin-login"><div className="admin-login__panel"><Link to="/"><ArrowLeft /> Back to portfolio</Link><span className="eyebrow">Private access</span><h1>Content Admin</h1><p>Sign in to update your public portfolio.</p><form onSubmit={login}><Field label="Username" value={credentials.username} onChange={(username) => setCredentials({ ...credentials, username })} /><Field label="Password" type="password" value={credentials.password} onChange={(password) => setCredentials({ ...credentials, password })} />{message && <p className="admin-message admin-message--error">{message}</p>}<button className="button button--primary" type="submit">Sign in</button></form></div></main>;
+  if (!session.authenticated) return <main className="admin-login"><div className="admin-login__panel"><Link to="/"><ArrowLeft /> Back to portfolio</Link><span className="eyebrow">Private access</span><h1>Content Admin</h1><p>Sign in with your Supabase Admin account.</p>{!isSupabaseConfigured && <p className="admin-message admin-message--error">Supabase environment variables are missing.</p>}<form onSubmit={login}><Field label="Email" type="email" value={credentials.email} onChange={(email) => setCredentials({ ...credentials, email })} /><Field label="Password" type="password" value={credentials.password} onChange={(password) => setCredentials({ ...credentials, password })} />{message && <p className={message.includes("sent") ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}<button className="button button--primary" type="submit" disabled={!isSupabaseConfigured}>Sign in</button><button className="button button--ghost" type="button" onClick={requestPasswordReset} disabled={!isSupabaseConfigured}>Forgot password?</button></form></div></main>;
   if (!draft) return null;
 
   return <main className="admin-page"><header className="admin-header"><div><span className="eyebrow">Private workspace</span><h1>Portfolio Content</h1></div><div><Link className="button button--ghost" to="/"><ArrowLeft /> View site</Link><button className="button button--ghost" type="button" onClick={logout}><SignOut /> Log out</button></div></header>
     <form className="admin-form" onSubmit={save}>
-      <section className="admin-card"><h2>Profile</h2><PortraitEditor value={draft.profile.portraitUrl} csrf={session.csrf} setMessage={setMessage} onChange={(value) => updateSection("profile", "portraitUrl", value)} /><div className="admin-grid"><Field label="Name" value={draft.profile.name} onChange={(value) => updateSection("profile", "name", value)} /><Field label="Role" value={draft.profile.role} onChange={(value) => updateSection("profile", "role", value)} /><Field label="Hero eyebrow" value={draft.profile.eyebrow} onChange={(value) => updateSection("profile", "eyebrow", value)} /><Field label="Availability" value={draft.profile.availability} onChange={(value) => updateSection("profile", "availability", value)} /><Field label="Intro" multiline value={draft.profile.intro} onChange={(value) => updateSection("profile", "intro", value)} /><Field label="Availability detail" multiline value={draft.profile.availabilityDetail} onChange={(value) => updateSection("profile", "availabilityDetail", value)} /></div></section>
+      <section className="admin-card"><h2>Profile</h2><PortraitEditor value={draft.profile.portraitUrl} setMessage={setMessage} onChange={(value) => updateSection("profile", "portraitUrl", value)} /><div className="admin-grid"><Field label="Name" value={draft.profile.name} onChange={(value) => updateSection("profile", "name", value)} /><Field label="Role" value={draft.profile.role} onChange={(value) => updateSection("profile", "role", value)} /><Field label="Hero eyebrow" value={draft.profile.eyebrow} onChange={(value) => updateSection("profile", "eyebrow", value)} /><Field label="Availability" value={draft.profile.availability} onChange={(value) => updateSection("profile", "availability", value)} /><Field label="Intro" multiline value={draft.profile.intro} onChange={(value) => updateSection("profile", "intro", value)} /><Field label="Availability detail" multiline value={draft.profile.availabilityDetail} onChange={(value) => updateSection("profile", "availabilityDetail", value)} /></div></section>
       <section className="admin-card"><h2>About</h2><Field label="Heading" value={draft.about.heading} onChange={(value) => updateSection("about", "heading", value)} />{draft.about.paragraphs.map((paragraph, index) => <Field key={index} label={`Paragraph ${index + 1}`} multiline value={paragraph} onChange={(value) => updateSection("about", "paragraphs", draft.about.paragraphs.map((item, itemIndex) => itemIndex === index ? value : item))} />)}</section>
       <ListEditor title="Skills" items={draft.about.skills} onChange={(value) => updateSection("about", "skills", value)} />
       <section className="admin-card"><div className="admin-card__heading"><h2>Projects</h2><button type="button" onClick={() => setDraft({ ...draft, projects: [...draft.projects, { id: crypto.randomUUID(), title: "New project", description: "", tech: [], url: draft.contact.github }] })}><Plus /> Add project</button></div>{draft.projects.map((project, index) => <article className="admin-repeat" key={project.id}><div className="admin-grid"><Field label="Title" value={project.title} onChange={(value) => updateArray("projects", index, "title", value)} /><Field label="Project URL" value={project.url} onChange={(value) => updateArray("projects", index, "url", value)} /><Field label="Description" multiline value={project.description} onChange={(value) => updateArray("projects", index, "description", value)} /><Field label="Technologies (comma separated)" value={project.tech.join(", ")} onChange={(value) => updateArray("projects", index, "tech", value.split(",").map((item) => item.trim()).filter(Boolean))} /></div><button type="button" className="delete-button" onClick={() => setDraft({ ...draft, projects: draft.projects.filter((_, itemIndex) => itemIndex !== index) })}><Trash /> Delete project</button></article>)}</section>
       <section className="admin-card"><div className="admin-card__heading"><h2>Semester Results</h2><button type="button" onClick={() => setDraft({ ...draft, semesterResults: [...draft.semesterResults, { semester: "", gpa: "" }] })}><Plus /> Add result</button></div><div className="admin-results">{draft.semesterResults.map((result, index) => <div key={index}><Field label="Semester" value={result.semester} onChange={(value) => updateArray("semesterResults", index, "semester", value)} /><Field label="GPA" value={result.gpa} onChange={(value) => updateArray("semesterResults", index, "gpa", value)} /><button type="button" className="icon-button" onClick={() => setDraft({ ...draft, semesterResults: draft.semesterResults.filter((_, itemIndex) => itemIndex !== index) })}><Trash /></button></div>)}</div></section>
       <section className="admin-card"><h2>Contact</h2><div className="admin-grid"><Field label="Gmail address" type="email" value={draft.contact.email} onChange={(value) => updateSection("contact", "email", value)} /><Field label="GitHub URL" value={draft.contact.github} onChange={(value) => updateSection("contact", "github", value)} /><Field label="LinkedIn URL (optional)" value={draft.contact.linkedin} onChange={(value) => updateSection("contact", "linkedin", value)} /><Field label="Facebook URL" value={draft.contact.facebook} onChange={(value) => updateSection("contact", "facebook", value)} /><Field label="WhatsApp number (country code, no +)" value={draft.contact.whatsapp} onChange={(value) => updateSection("contact", "whatsapp", value.replace(/\D/g, ""))} /></div></section>
-      <DocumentEditor title="Awards" items={draft.awards} csrf={session.csrf} setMessage={setMessage} onChange={(items) => setDraft((current) => ({ ...current, awards: items }))} />
-      <DocumentEditor title="Certificates" items={draft.certifications} csrf={session.csrf} setMessage={setMessage} onChange={(items) => setDraft((current) => ({ ...current, certifications: items }))} />
+      <DocumentEditor title="Awards" items={draft.awards} setMessage={setMessage} onChange={(items) => setDraft((current) => ({ ...current, awards: items }))} />
+      <DocumentEditor title="Certificates" items={draft.certifications} setMessage={setMessage} onChange={(items) => setDraft((current) => ({ ...current, certifications: items }))} />
       <div className="admin-save">{message && <p className={message.includes("successfully") ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}<button className="button button--primary" type="submit" disabled={saving}><FloppyDisk /> {saving ? "Saving…" : "Save all changes"}</button></div>
     </form>
   </main>;

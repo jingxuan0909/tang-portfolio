@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import initialContent from "../data/content.json";
+import { supabase } from "./supabase";
 
 const ContentContext = createContext(null);
 
@@ -8,12 +10,22 @@ export function ContentProvider({ children }) {
 
   async function refresh() {
     try {
-      const response = await fetch("/api/content", { cache: "no-store" });
-      if (!response.ok) throw new Error("Unable to load portfolio content.");
-      setContent(await response.json());
+      if (!supabase) {
+        setContent(initialContent);
+        setError("Supabase is not configured yet.");
+        return;
+      }
+      const { data, error: requestError } = await supabase
+        .from("portfolio_content")
+        .select("content")
+        .eq("id", 1)
+        .maybeSingle();
+      if (requestError) throw requestError;
+      setContent(data?.content || initialContent);
       setError("");
     } catch (requestError) {
-      setError(requestError.message);
+      setContent(initialContent);
+      setError("");
     }
   }
 
@@ -30,4 +42,3 @@ export function useContent() {
   if (!value) throw new Error("useContent must be used inside ContentProvider");
   return value;
 }
-
