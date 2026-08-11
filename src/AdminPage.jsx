@@ -75,9 +75,10 @@ const educationFields = [{ key: "institution", label: "Institution" }, { key: "q
 const experienceFields = [{ key: "company", label: "Company" }, { key: "role", label: "Role" }, { key: "period", label: "Period" }, { key: "description", label: "Description", multiline: true }];
 const activityFields = [{ key: "club", label: "Club / organisation" }, { key: "position", label: "Position" }, { key: "period", label: "Period" }, { key: "description", label: "Description", multiline: true }];
 
-async function uploadFile(file) {
-  const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
-  if (!allowedTypes.includes(file.type)) throw new Error("Only PDF, JPG, PNG, and WebP files are allowed.");
+async function uploadFile(file, { imagesOnly = false } = {}) {
+  const imageTypes = ["image/jpeg", "image/png", "image/webp"];
+  const allowedTypes = imagesOnly ? imageTypes : ["application/pdf", ...imageTypes];
+  if (!allowedTypes.includes(file.type)) throw new Error(imagesOnly ? "Only JPG, PNG, and WebP images are allowed." : "Only PDF, JPG, PNG, and WebP files are allowed.");
   if (file.size > 10 * 1024 * 1024) throw new Error("File must be 10 MB or smaller.");
   const extension = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "bin";
   const path = `${new Date().getFullYear()}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
@@ -99,7 +100,7 @@ function PortraitEditor({ value, onChange, onUploadComplete, setMessage }) {
     if (!file) return;
     setUploading(true); setMessage("");
     try {
-      const url = await uploadFile(file);
+      const url = await uploadFile(file, { imagesOnly: true });
       onChange(url);
       await onUploadComplete(url);
       setMessage("Portrait uploaded and published successfully.");
@@ -110,6 +111,43 @@ function PortraitEditor({ value, onChange, onUploadComplete, setMessage }) {
     setMessage("Portrait removed successfully. Select Save changes to publish the default avatar.");
   }
   return <div className="admin-portrait"><div className="admin-portrait__preview"><img src={value || DEFAULT_PORTRAIT} alt="Current portrait preview" /></div><div className="admin-portrait__controls"><strong>Current portrait</strong><p>Select a real JPG, PNG, or WebP file from your device. Remove portrait switches the website to your white default avatar.</p><div className="admin-portrait__actions"><label className="upload-button"><UploadSimple /> {uploading ? "Uploading…" : "Choose and upload portrait"}<input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => upload(event.target.files?.[0])} /></label><button className="delete-button" type="button" onClick={remove} disabled={value === DEFAULT_PORTRAIT}><Trash /> Remove portrait</button></div></div></div>;
+}
+
+function ProjectEditor({ items, onChange, onUploadComplete, setMessage, defaultUrl }) {
+  const [editor, setEditor] = useState(null);
+  const [uploading, setUploading] = useState("");
+  const openAdd = () => setEditor({ mode: "add", index: -1, value: { id: crypto.randomUUID(), title: "", description: "", tech: [], url: defaultUrl, logoUrl: "" } });
+  const openEdit = (index) => setEditor({ mode: "edit", index, value: structuredClone(items[index]) });
+  function confirm() {
+    const nextItems = editor.mode === "add" ? [...items, editor.value] : items.map((item, index) => index === editor.index ? editor.value : item);
+    onChange(nextItems);
+    setMessage(`Projects ${editor.mode === "add" ? "added" : "updated"} successfully. Select Save changes to publish.`);
+    setEditor(null);
+  }
+  function remove(index) {
+    onChange(items.filter((_, itemIndex) => itemIndex !== index));
+    setMessage("Project removed successfully. Select Save changes to publish.");
+  }
+  function removeLogo(index) {
+    onChange(items.map((item, itemIndex) => itemIndex === index ? { ...item, logoUrl: "" } : item));
+    setMessage("Project logo removed successfully. Select Save changes to publish the default icon.");
+  }
+  async function upload(index, file) {
+    if (!file) return;
+    const uploadId = items[index].id || String(index);
+    setUploading(uploadId); setMessage("");
+    try {
+      const logoUrl = await uploadFile(file, { imagesOnly: true });
+      const nextItems = items.map((item, itemIndex) => itemIndex === index ? { ...item, logoUrl } : item);
+      onChange(nextItems);
+      await onUploadComplete(nextItems);
+      setMessage("Project logo uploaded and published successfully.");
+    } catch (error) { setMessage(error.message); } finally { setUploading(""); }
+  }
+  return <section className="admin-card"><div className="admin-card__heading"><div><h2>Projects</h2><p>Updates the Home and Resume pages. Upload a real logo image or keep the default Phosphor icon.</p></div><button type="button" onClick={openAdd}><Plus /> Add project</button></div>
+    <div className="admin-entry-list">{items.map((item, index) => { const uploadId = item.id || String(index); return <article className="admin-entry admin-project" key={uploadId}><div className="admin-project-summary"><div className={`admin-project-logo ${item.logoUrl ? "" : "admin-project-logo--empty"}`}>{item.logoUrl ? <img src={item.logoUrl} alt={`${item.title} logo preview`} /> : <span>No logo</span>}</div><div className="admin-entry__details"><span className="admin-entry__primary"><small>Title</small>{item.title}</span><span><small>Project URL</small>{item.url}</span><span><small>Description</small>{item.description}</span><span><small>Technologies</small>{(item.tech || []).join(", ")}</span></div></div><div className="admin-document__actions"><button type="button" onClick={() => openEdit(index)}><PencilSimple /> Edit</button><label className="upload-button"><UploadSimple /> {uploading === uploadId ? "Uploading..." : item.logoUrl ? "Replace logo" : "Upload logo"}<input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} onChange={(event) => upload(index, event.target.files?.[0])} /></label>{item.logoUrl && <><a href={item.logoUrl} target="_blank" rel="noreferrer"><ArrowSquareOut /> View logo</a><button type="button" className="delete-button" onClick={() => removeLogo(index)}><Trash /> Remove logo</button></>}<button type="button" className="delete-button" onClick={() => remove(index)}><Trash /> Delete project</button></div></article>; })}</div>
+    {editor && <EditorModal title={`${editor.mode === "add" ? "Add" : "Edit"} Project`} confirmLabel={editor.mode === "add" ? "Add" : "Update"} confirmDisabled={!editor.value.title.trim()} onCancel={() => setEditor(null)} onConfirm={confirm}>{projectFields.map((field, index) => <Field key={field.key} label={field.label} multiline={field.multiline} value={field.format ? field.format(editor.value[field.key]) : editor.value[field.key]} onChange={(value) => setEditor({ ...editor, value: { ...editor.value, [field.key]: field.parse ? field.parse(value) : value } })} required={index === 0} />)}</EditorModal>}
+  </section>;
 }
 
 function DocumentEditor({ title, items, onChange, onUploadComplete, setMessage }) {
@@ -204,9 +242,10 @@ export function AdminPage() {
       <section className="admin-card"><h2>About heading</h2><Field label="Heading" value={draft.about.heading} onChange={(value) => updateSection("about", "heading", value)} /></section>
       <ListEditor title="About paragraphs" description="Updates the Home and About pages." multiline addLabel="Add paragraph" items={draft.about.paragraphs} onChange={(value) => updateSection("about", "paragraphs", value)} setMessage={setMessage} />
       <ListEditor title="Skills" description="Updates the Home, About, and Resume pages together." items={draft.about.skills} onChange={(value) => updateSection("about", "skills", value)} setMessage={setMessage} />
-      <RecordEditor title="Projects" description="Updates the Home and Resume pages." addLabel="Add project" items={draft.projects} fields={projectFields} createItem={() => ({ id: crypto.randomUUID(), title: "", description: "", tech: [], url: draft.contact.github })} onChange={setArray("projects")} setMessage={setMessage} />
+      <ProjectEditor items={draft.projects} defaultUrl={draft.contact.github} onChange={setArray("projects")} setMessage={setMessage} onUploadComplete={(items) => persistContent({ ...draft, projects: items }, "Project logo uploaded and published successfully.")} />
       <RecordEditor title="Semester Results" description="Add Semester 5, 6, 6.5, or future results here." addLabel="Add result" items={draft.semesterResults} fields={semesterFields} createItem={() => ({ id: crypto.randomUUID(), semester: "", gpa: "" })} onChange={setArray("semesterResults")} setMessage={setMessage} />
       <RecordEditor title="Education" description="Shown on the Resume page in this order." items={draft.education} fields={educationFields} createItem={() => ({ id: crypto.randomUUID(), institution: "", qualification: "", period: "" })} onChange={setArray("education")} setMessage={setMessage} />
+      <section className="admin-card"><div className="admin-card__heading"><div><h2>Current Employment</h2><p>Show your present workplace above previous experience on both the Home and Resume pages.</p></div><label className="admin-toggle"><input type="checkbox" checked={Boolean(draft.currentEmployment.visible)} onChange={(event) => updateSection("currentEmployment", "visible", event.target.checked)} /><span aria-hidden="true" /><strong>{draft.currentEmployment.visible ? "Visible" : "Hidden"}</strong></label></div><div className="admin-grid"><Field label="Company" value={draft.currentEmployment.company} onChange={(value) => updateSection("currentEmployment", "company", value)} /><Field label="Role" value={draft.currentEmployment.role} onChange={(value) => updateSection("currentEmployment", "role", value)} /><Field label="Period" value={draft.currentEmployment.period} onChange={(value) => updateSection("currentEmployment", "period", value)} /><Field label="Description" multiline value={draft.currentEmployment.description} onChange={(value) => updateSection("currentEmployment", "description", value)} /></div></section>
       <RecordEditor title="Experience" description="Automatically ordered from the most recent period to the oldest." items={sortRecent(draft.experience, "period")} fields={experienceFields} createItem={() => ({ id: crypto.randomUUID(), company: "", role: "", period: "", description: "" })} onChange={setRecentArray("experience", "period")} setMessage={setMessage} />
       <RecordEditor title="Extra Curricular Activities" description="Automatically ordered from the most recent period to the oldest." items={sortRecent(draft.extraCurricularActivities, "period")} fields={activityFields} createItem={() => ({ id: crypto.randomUUID(), club: "", position: "", period: "", description: "" })} onChange={setRecentArray("extraCurricularActivities", "period")} setMessage={setMessage} />
       <section className="admin-card"><h2>Contact</h2><p className="admin-card__hint">Save once here to update the footer, Home contact panel, and Contact page together.</p><div className="admin-grid"><Field label="Gmail address" type="email" value={draft.contact.email} onChange={(value) => updateSection("contact", "email", value)} /><Field label="GitHub URL" value={draft.contact.github} onChange={(value) => updateSection("contact", "github", value)} /><Field label="LinkedIn URL (optional)" value={draft.contact.linkedin} onChange={(value) => updateSection("contact", "linkedin", value)} /><Field label="Facebook URL" value={draft.contact.facebook} onChange={(value) => updateSection("contact", "facebook", value)} /><Field label="WhatsApp number (country code, no +)" value={draft.contact.whatsapp} onChange={(value) => updateSection("contact", "whatsapp", value.replace(/\D/g, ""))} /></div></section>

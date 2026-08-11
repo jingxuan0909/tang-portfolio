@@ -4,6 +4,18 @@ import { supabase } from "./supabase";
 
 const ContentContext = createContext(null);
 
+function mergeWithDefaults(savedContent) {
+  if (!savedContent) return initialContent;
+  return {
+    ...initialContent,
+    ...savedContent,
+    profile: { ...initialContent.profile, ...savedContent.profile },
+    about: { ...initialContent.about, ...savedContent.about },
+    currentEmployment: { ...initialContent.currentEmployment, ...savedContent.currentEmployment },
+    contact: { ...initialContent.contact, ...savedContent.contact },
+  };
+}
+
 export function ContentProvider({ children }) {
   const [content, setContent] = useState(null);
   const [error, setError] = useState("");
@@ -21,7 +33,7 @@ export function ContentProvider({ children }) {
         .eq("id", 1)
         .maybeSingle();
       if (requestError) throw requestError;
-      setContent(data?.content || initialContent);
+      setContent(mergeWithDefaults(data?.content));
       setError("");
     } catch (requestError) {
       setContent(initialContent);

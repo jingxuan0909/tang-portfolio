@@ -7,6 +7,12 @@ import { sortRecent } from "./content-utils";
 
 const projectIcons = [ChatCircleDots, ShieldCheck, Barbell];
 
+function ProjectMark({ project, index }) {
+  if (project.logoUrl) return <span className="project-row__icon project-row__icon--image"><img src={project.logoUrl} alt={`${project.title} logo`} /></span>;
+  const Icon = projectIcons[index % projectIcons.length];
+  return <span className="project-row__icon"><Icon size={28} weight="duotone" /></span>;
+}
+
 function CredentialCards({ items }) {
   return <div className="credential-grid">{items.map((item) => <a className="credential-card" href={item.url} target="_blank" rel="noreferrer" key={item.id}>
     <span className="credential-card__icon"><Certificate size={25} weight="duotone" /></span>
@@ -21,6 +27,7 @@ export function HomePage() {
   const { profile, about, projects, semesterResults, contact } = content;
   const recentExperience = sortRecent(content.experience, "period");
   const recentAwards = sortRecent(content.awards, "date");
+  const currentEmployment = content.currentEmployment;
   return (
     <Layout compactBackground={false}>
       <section className="hero">
@@ -49,13 +56,7 @@ export function HomePage() {
         </motion.div>
         <motion.div className="project-preview" {...reveal} transition={{ ...reveal.transition, delay: .1 }}>
           <span className="eyebrow">Projects</span><h2>Recent Projects</h2>
-          <div className="project-list">{projects.map((project, index) => {
-            const Icon = projectIcons[index % projectIcons.length];
-            return <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}>
-              <span className="project-row__icon"><Icon size={28} weight="duotone" /></span>
-              <span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowRight size={22} />
-            </a>;
-          })}</div>
+          <div className="project-list">{projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowRight size={22} /></a>)}</div>
           <a className="text-link" href={contact.github} target="_blank" rel="noreferrer">View all projects <ArrowRight /></a>
         </motion.div>
       </section>
@@ -67,8 +68,11 @@ export function HomePage() {
       </motion.section>
 
       <motion.section className="home-experience section-wrap" {...reveal}>
-        <div className="section-heading"><div><span className="eyebrow">Experience</span><h2>Practical Experience</h2></div><Link className="text-link" to="/resume">View full resume <ArrowRight /></Link></div>
-        <div className="experience-grid">{recentExperience.map((item, index) => <article className="experience-card" key={item.id || `${item.company}-${index}`}><span className="experience-card__icon"><Briefcase size={23} weight="duotone" /></span><small>{item.period}</small><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</div>
+        <h2>Experience</h2>
+        {currentEmployment.visible && <div className="current-employment"><span className="eyebrow">Where I work now</span><small>{currentEmployment.period}</small><h3>{currentEmployment.company}</h3><strong>{currentEmployment.role}</strong><p>{currentEmployment.description}</p></div>}
+        {currentEmployment.visible && <h3 className="experience-group-title">Previous experience</h3>}
+        <div className="experience-timeline">{recentExperience.map((item, index) => <article className="experience-entry" key={item.id || `${item.company}-${index}`}><small>{item.period}</small><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</div>
+        <Link className="text-link experience-more" to="/resume">View full resume <ArrowRight /></Link>
       </motion.section>
 
       <motion.section className="home-credentials section-wrap" {...reveal}>
@@ -106,13 +110,14 @@ export function ResumePage() {
   const recentExperience = sortRecent(content.experience, "period");
   const recentActivities = sortRecent(content.extraCurricularActivities, "period");
   const recentAwards = sortRecent(content.awards, "date");
+  const currentEmployment = content.currentEmployment;
   return <Layout><PageIntro eyebrow="Resume" title="Experience, education, and skills"><p>{content.profile.intro}</p></PageIntro>
     <section className="content-section resume-layout">
       <motion.div className="resume-block" {...reveal}><h2><Trophy /> Semester Results</h2><div className="result-table">{content.semesterResults.map((item, index) => <div key={`${item.semester}-${index}`}><span>Semester {item.semester}</span><strong>{item.gpa}</strong></div>)}</div></motion.div>
       <motion.div className="resume-block" {...reveal}><h2><GraduationCap /> Education</h2>{content.education.map((item, index) => <article className="timeline-item" key={item.id || `${item.institution}-${index}`}><span>{item.period}</span><h3>{item.institution}</h3><p>{item.qualification}</p></article>)}</motion.div>
-      <motion.div className="resume-block resume-block--wide" {...reveal}><h2>Experience</h2>{recentExperience.map((item, index) => <article className="timeline-item" key={item.id || `${item.company}-${index}`}><span>{item.period}</span><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</motion.div>
+      <motion.div className="resume-block resume-block--wide" {...reveal}><h2>Experience</h2>{currentEmployment.visible && <article className="timeline-item timeline-item--current"><span>{currentEmployment.period || "Present"}</span><h3>{currentEmployment.company}</h3><strong>{currentEmployment.role}</strong><p>{currentEmployment.description}</p></article>}{recentExperience.map((item, index) => <article className="timeline-item" key={item.id || `${item.company}-${index}`}><span>{item.period}</span><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</motion.div>
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><UsersThree /> Extra Curricular Activities</h2>{recentActivities.map((item, index) => <article className="timeline-item" key={item.id || `${item.club}-${index}`}><span>{item.period}</span><h3>{item.club}</h3><strong>{item.position}</strong><p>{item.description}</p></article>)}</motion.div>
-      <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Briefcase /> Projects</h2><div className="resume-project-grid">{content.projects.map((project, index) => { const Icon = projectIcons[index % projectIcons.length]; return <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><span className="project-row__icon"><Icon size={28} weight="duotone" /></span><span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowSquareOut size={20} /></a>; })}</div></motion.div>
+      <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Briefcase /> Projects</h2><div className="resume-project-grid">{content.projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowSquareOut size={20} /></a>)}</div></motion.div>
       <motion.div className="resume-block" {...reveal}><h2>Skills</h2><div className="skill-cloud skill-cloud--large">{content.about.skills.map((skill, index) => <span key={`resume-skill-${index}`}>{skill}</span>)}</div></motion.div>
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Trophy /> Awards</h2><p className="credential-intro">Select an award to view the original letter.</p><CredentialCards items={recentAwards} /></motion.div>
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Certificate /> Certificates</h2><p className="credential-intro">Select a certificate to view the verified document.</p><CredentialCards items={content.certifications} /></motion.div>

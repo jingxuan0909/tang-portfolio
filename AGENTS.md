@@ -22,3 +22,5 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Awards and certificates are public, clickable credentials backed by uploaded PDF/image files; authenticated Admin users can add, edit, upload, and remove credential entries.
 - Authenticated Admin users can upload or edit the shared portrait used by Home, About, and the footer.
 - Home presents Semester Results followed by Experience and a combined Awards & Certificates showcase; Resume also includes Extra Curricular Activities and Projects.
+- Home Experience uses an editorial vertical timeline: coral uppercase dates, serif company names, bold roles, full descriptions, and newest-to-oldest ordering rather than a card grid.
+- Current Employment is an optional Admin-controlled record, hidden by default; when enabled it appears above previous work on Home and Resume. Projects accept uploaded image logos, with the existing Phosphor icon as the fallback.

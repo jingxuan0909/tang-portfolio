@@ -40,3 +40,27 @@
 - [x] Console error/warning check
 
 final result: passed
+
+---
+
+## Home Experience timeline update — 2026-08-11
+
+- **Source:** user-provided `861 x 860` screenshot showing a dark editorial Experience timeline.
+- **Implementation target:** Home Experience only; existing typography, colors, dynamic Supabase data, and newest-to-oldest sorting are preserved.
+- **Implemented:** single-column timeline, subtle left rule, coral uppercase periods, serif company names, bold roles, full descriptions, and responsive spacing.
+- **Automated build check:** passed with Vite production build.
+- **Visual comparison:** blocked because both available desktop browser preview connections failed to initialize in this session. The local preview is open for user inspection; same-viewport capture and console inspection remain outstanding.
+
+final result: blocked
+
+---
+
+## Current Employment and project-logo update — 2026-08-11
+
+- **Source:** user-provided Projects screenshot and the existing Home Experience design system.
+- **Implemented:** an Admin-controlled Current Employment record with a visible/hidden switch; when visible it leads both Home and Resume Experience, with previous jobs below it.
+- **Implemented:** authenticated JPG/PNG/WebP project-logo upload, preview, replacement, removal, and Phosphor fallback rendering on Home and Resume.
+- **Automated checks:** Vite Vercel production build and whitespace validation passed.
+- **Visual comparison:** blocked because the in-app preview connection failed to initialize in this session. Same-viewport visual capture, interaction inspection, and console inspection remain outstanding.
+
+final result: blocked

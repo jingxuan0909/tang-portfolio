@@ -8,6 +8,13 @@
     "availability": "Open to internship opportunities",
     "availabilityDetail": "Actively seeking a 16+ week internship where I can contribute, learn, and grow with a dynamic technical team."
   },
+  "currentEmployment": {
+    "visible": false,
+    "company": "",
+    "role": "",
+    "period": "",
+    "description": ""
+  },
   "about": {
     "heading": "Curious. Disciplined. Security-Minded.",
     "paragraphs": [
@@ -35,6 +42,7 @@
       "id": "innolink",
       "title": "innoLink Chatbot",
       "description": "A Python chatbot designed to answer questions, retrieve useful information, and provide intelligent assistance.",
+      "logoUrl": "",
       "tech": [
         "Python",
         "NLP",
@@ -46,6 +54,7 @@
       "id": "mysafety",
       "title": "MySafety",
       "description": "A Java-based safety system designed to improve awareness and provide quick access to emergency resources.",
+      "logoUrl": "",
       "tech": [
         "Java",
         "Application",
@@ -57,6 +66,7 @@
       "id": "fitness-app",
       "title": "Fitness Application",
       "description": "A JavaFX fitness application that helps users plan workouts, monitor progress, and stay consistent.",
+      "logoUrl": "",
       "tech": [
         "Java",
         "JavaFX",
