@@ -222,7 +222,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .icon-button { display: grid; place-items: center; border: 1px solid var(--line); color: #ff9b8d; background: #07142f; border-radius: 6px; cursor: pointer; }
 .delete-button { margin-top: 16px; color: #ff9b8d; }
 .admin-entry-list { display: grid; gap: 12px; }
-.admin-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: center; padding: 18px; border: 1px solid var(--line); background: #07142f; border-radius: 8px; }
+.admin-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: start; padding: 18px; border: 1px solid var(--line); background: #07142f; border-radius: 8px; }
 .admin-entry--paragraph { align-items: start; }
 .admin-entry--paragraph p { margin: 0; color: var(--muted); line-height: 1.65; white-space: pre-wrap; }
 .admin-entry__details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px 22px; }
@@ -231,6 +231,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .admin-entry__details .admin-entry__primary { color: var(--text); font-size: 17px; font-weight: 600; }
 .admin-entry__actions, .admin-document__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 .admin-entry__actions button, .admin-document__actions button { min-height: 40px; display: inline-flex; align-items: center; gap: 7px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--text); cursor: pointer; }
+.admin-entry__actions button { min-width: 88px; justify-content: center; }
+.admin-entry__actions .delete-button { margin-top: 0; }
 .admin-document__actions .delete-button { margin-top: 0; }
 .admin-document__actions > a, .upload-button { min-height: 40px; display: inline-flex; align-items: center; gap: 7px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); cursor: pointer; transition: border-color .2s ease, color .2s ease; }
 .admin-document__actions > a:hover, .upload-button:hover { border-color: var(--coral); color: var(--coral); }

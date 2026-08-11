@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowSquareOut, FloppyDisk, PencilSimple, Plus, SignOut, Trash, UploadSimple, X } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { useContent } from "./content-context";
+import { sortRecent } from "./content-utils";
 import { isSupabaseConfigured, supabase } from "./supabase";
 
 const DEFAULT_PORTRAIT = "/assets/default-avatar.png";
@@ -174,7 +175,13 @@ export function AdminPage() {
     setMessage(error ? error.message : "Password recovery email sent. Use only the newest email link.");
   }
   async function persistContent(nextDraft, successMessage = "Changes saved successfully.") {
-    const normalizedDraft = { ...nextDraft, contact: { ...nextDraft.contact, github: normalizeExternalUrl(nextDraft.contact.github), linkedin: normalizeExternalUrl(nextDraft.contact.linkedin), facebook: normalizeExternalUrl(nextDraft.contact.facebook) } };
+    const normalizedDraft = {
+      ...nextDraft,
+      experience: sortRecent(nextDraft.experience, "period"),
+      extraCurricularActivities: sortRecent(nextDraft.extraCurricularActivities, "period"),
+      awards: sortRecent(nextDraft.awards, "date"),
+      contact: { ...nextDraft.contact, github: normalizeExternalUrl(nextDraft.contact.github), linkedin: normalizeExternalUrl(nextDraft.contact.linkedin), facebook: normalizeExternalUrl(nextDraft.contact.facebook) },
+    };
     const { data, error } = await supabase.from("portfolio_content").upsert({ id: 1, content: normalizedDraft, updated_at: new Date().toISOString() }, { onConflict: "id" }).select("content").single();
     if (error) throw error;
     setDraft(structuredClone(data.content)); setContent(data.content); await refresh(); setMessage(successMessage); return data.content;
@@ -182,6 +189,7 @@ export function AdminPage() {
   async function save(event) { event.preventDefault(); setSaving(true); setMessage(""); try { await persistContent(draft); } catch (error) { setMessage(error.message); } finally { setSaving(false); } }
   function updateSection(section, key, value) { setDraft((current) => ({ ...current, [section]: { ...current[section], [key]: value } })); }
   const setArray = (section) => (items) => setDraft((current) => ({ ...current, [section]: items }));
+  const setRecentArray = (section, dateKey) => (items) => setDraft((current) => ({ ...current, [section]: sortRecent(items, dateKey) }));
 
   if (session.loading || !content) return <div className="admin-loading">Checking secure session…</div>;
   if (!session.authenticated) return <main className="admin-login"><div className="admin-login__panel"><Link to="/"><ArrowLeft /> Back to portfolio</Link><span className="eyebrow">Private access</span><h1>Content Admin</h1><p>Sign in with your Supabase Admin account.</p>{!isSupabaseConfigured && <p className="admin-message admin-message--error">Supabase environment variables are missing.</p>}<form onSubmit={login} autoComplete="off"><Field label="Email" type="email" autoComplete="off" value={credentials.email} onChange={(email) => setCredentials({ ...credentials, email })} /><Field label="Password" type="password" autoComplete="off" value={credentials.password} onChange={(password) => setCredentials({ ...credentials, password })} />{message && <p className={message.includes("sent") ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}<button className="button button--primary" type="submit" disabled={!isSupabaseConfigured}>Sign in</button><button className="button button--ghost" type="button" onClick={requestPasswordReset} disabled={!isSupabaseConfigured}>Forgot password?</button></form></div></main>;
@@ -199,10 +207,10 @@ export function AdminPage() {
       <RecordEditor title="Projects" description="Updates the Home and Resume pages." addLabel="Add project" items={draft.projects} fields={projectFields} createItem={() => ({ id: crypto.randomUUID(), title: "", description: "", tech: [], url: draft.contact.github })} onChange={setArray("projects")} setMessage={setMessage} />
       <RecordEditor title="Semester Results" description="Add Semester 5, 6, 6.5, or future results here." addLabel="Add result" items={draft.semesterResults} fields={semesterFields} createItem={() => ({ id: crypto.randomUUID(), semester: "", gpa: "" })} onChange={setArray("semesterResults")} setMessage={setMessage} />
       <RecordEditor title="Education" description="Shown on the Resume page in this order." items={draft.education} fields={educationFields} createItem={() => ({ id: crypto.randomUUID(), institution: "", qualification: "", period: "" })} onChange={setArray("education")} setMessage={setMessage} />
-      <RecordEditor title="Experience" description="Updates both the Home experience section and the Resume page." items={draft.experience} fields={experienceFields} createItem={() => ({ id: crypto.randomUUID(), company: "", role: "", period: "", description: "" })} onChange={setArray("experience")} setMessage={setMessage} />
-      <RecordEditor title="Extra Curricular Activities" description="Shown on the Resume page." items={draft.extraCurricularActivities} fields={activityFields} createItem={() => ({ id: crypto.randomUUID(), club: "", position: "", period: "", description: "" })} onChange={setArray("extraCurricularActivities")} setMessage={setMessage} />
+      <RecordEditor title="Experience" description="Automatically ordered from the most recent period to the oldest." items={sortRecent(draft.experience, "period")} fields={experienceFields} createItem={() => ({ id: crypto.randomUUID(), company: "", role: "", period: "", description: "" })} onChange={setRecentArray("experience", "period")} setMessage={setMessage} />
+      <RecordEditor title="Extra Curricular Activities" description="Automatically ordered from the most recent period to the oldest." items={sortRecent(draft.extraCurricularActivities, "period")} fields={activityFields} createItem={() => ({ id: crypto.randomUUID(), club: "", position: "", period: "", description: "" })} onChange={setRecentArray("extraCurricularActivities", "period")} setMessage={setMessage} />
       <section className="admin-card"><h2>Contact</h2><p className="admin-card__hint">Save once here to update the footer, Home contact panel, and Contact page together.</p><div className="admin-grid"><Field label="Gmail address" type="email" value={draft.contact.email} onChange={(value) => updateSection("contact", "email", value)} /><Field label="GitHub URL" value={draft.contact.github} onChange={(value) => updateSection("contact", "github", value)} /><Field label="LinkedIn URL (optional)" value={draft.contact.linkedin} onChange={(value) => updateSection("contact", "linkedin", value)} /><Field label="Facebook URL" value={draft.contact.facebook} onChange={(value) => updateSection("contact", "facebook", value)} /><Field label="WhatsApp number (country code, no +)" value={draft.contact.whatsapp} onChange={(value) => updateSection("contact", "whatsapp", value.replace(/\D/g, ""))} /></div></section>
-      <DocumentEditor title="Awards" items={draft.awards} setMessage={setMessage} onChange={setArray("awards")} onUploadComplete={(items) => persistContent({ ...draft, awards: items }, "Award document uploaded and published successfully.")} />
+      <DocumentEditor title="Awards" items={sortRecent(draft.awards, "date")} setMessage={setMessage} onChange={setRecentArray("awards", "date")} onUploadComplete={(items) => persistContent({ ...draft, awards: sortRecent(items, "date") }, "Award document uploaded and published successfully.")} />
       <DocumentEditor title="Certificates" items={draft.certifications} setMessage={setMessage} onChange={setArray("certifications")} onUploadComplete={(items) => persistContent({ ...draft, certifications: items }, "Certificate uploaded and published successfully.")} />
     </form>
   </main>;
