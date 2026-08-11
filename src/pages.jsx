@@ -25,9 +25,11 @@ export function HomePage() {
   const { content, error } = useContent();
   if (!content) return <LoadingScreen />;
   const { profile, about, projects, semesterResults, contact } = content;
-  const recentExperience = sortRecent(content.experience, "period");
+  const recentExperience = sortRecent(content.experience, "period").filter((item) => item.visible !== false);
   const recentAwards = sortRecent(content.awards, "date");
   const currentEmployment = content.currentEmployment;
+  const sectionVisibility = content.sectionVisibility;
+  const visibleSemesterResults = semesterResults.filter((item) => item.visible !== false);
   return (
     <Layout compactBackground={false}>
       <section className="hero">
@@ -61,19 +63,19 @@ export function HomePage() {
         </motion.div>
       </section>
 
-      <motion.section className="results section-wrap" {...reveal}>
+      {sectionVisibility.semesterResults && visibleSemesterResults.length > 0 && <motion.section className="results section-wrap" {...reveal}>
         <span className="eyebrow">Semester results</span><h2>Academic Progress</h2>
-        <div className="results-grid">{semesterResults.map((result, index) => <article key={`${result.semester}-${index}`}><Trophy size={22} weight="duotone" /><small>Semester {result.semester}</small><strong>{result.gpa}</strong><span>GPA</span></article>)}</div>
+        <div className="results-grid">{visibleSemesterResults.map((result, index) => <article key={`${result.semester}-${index}`}><Trophy size={22} weight="duotone" /><small>Semester {result.semester}</small><strong>{result.gpa}</strong><span>GPA</span></article>)}</div>
         <p>Consistent progress. Continuous growth.</p>
-      </motion.section>
+      </motion.section>}
 
-      <motion.section className="home-experience section-wrap" {...reveal}>
+      {sectionVisibility.experience && (currentEmployment.visible || recentExperience.length > 0) && <motion.section className="home-experience section-wrap" {...reveal}>
         <h2>Experience</h2>
         {currentEmployment.visible && <div className="current-employment"><span className="eyebrow">Where I work now</span><small>{currentEmployment.period}</small><h3>{currentEmployment.company}</h3><strong>{currentEmployment.role}</strong><p>{currentEmployment.description}</p></div>}
         {currentEmployment.visible && <h3 className="experience-group-title">Previous experience</h3>}
         <div className="experience-timeline">{recentExperience.map((item, index) => <article className="experience-entry" key={item.id || `${item.company}-${index}`}><small>{item.period}</small><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</div>
         <Link className="text-link experience-more" to="/resume">View full resume <ArrowRight /></Link>
-      </motion.section>
+      </motion.section>}
 
       <motion.section className="home-credentials section-wrap" {...reveal}>
         <span className="eyebrow">Achievements</span><h2>Awards & Certificates</h2>
@@ -107,16 +109,18 @@ export function AboutPage() {
 export function ResumePage() {
   const { content } = useContent();
   if (!content) return <LoadingScreen />;
-  const recentExperience = sortRecent(content.experience, "period");
-  const recentActivities = sortRecent(content.extraCurricularActivities, "period");
+  const recentExperience = sortRecent(content.experience, "period").filter((item) => item.visible !== false);
+  const recentActivities = sortRecent(content.extraCurricularActivities, "period").filter((item) => item.visible !== false);
   const recentAwards = sortRecent(content.awards, "date");
   const currentEmployment = content.currentEmployment;
+  const sectionVisibility = content.sectionVisibility;
+  const visibleSemesterResults = content.semesterResults.filter((item) => item.visible !== false);
   return <Layout><PageIntro eyebrow="Resume" title="Experience, education, and skills"><p>{content.profile.intro}</p></PageIntro>
     <section className="content-section resume-layout">
-      <motion.div className="resume-block" {...reveal}><h2><Trophy /> Semester Results</h2><div className="result-table">{content.semesterResults.map((item, index) => <div key={`${item.semester}-${index}`}><span>Semester {item.semester}</span><strong>{item.gpa}</strong></div>)}</div></motion.div>
+      {sectionVisibility.semesterResults && visibleSemesterResults.length > 0 && <motion.div className="resume-block" {...reveal}><h2><Trophy /> Semester Results</h2><div className="result-table">{visibleSemesterResults.map((item, index) => <div key={`${item.semester}-${index}`}><span>Semester {item.semester}</span><strong>{item.gpa}</strong></div>)}</div></motion.div>}
       <motion.div className="resume-block" {...reveal}><h2><GraduationCap /> Education</h2>{content.education.map((item, index) => <article className="timeline-item" key={item.id || `${item.institution}-${index}`}><span>{item.period}</span><h3>{item.institution}</h3><p>{item.qualification}</p></article>)}</motion.div>
-      <motion.div className="resume-block resume-block--wide" {...reveal}><h2>Experience</h2>{currentEmployment.visible && <article className="timeline-item timeline-item--current"><span>{currentEmployment.period || "Present"}</span><h3>{currentEmployment.company}</h3><strong>{currentEmployment.role}</strong><p>{currentEmployment.description}</p></article>}{recentExperience.map((item, index) => <article className="timeline-item" key={item.id || `${item.company}-${index}`}><span>{item.period}</span><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</motion.div>
-      <motion.div className="resume-block resume-block--wide" {...reveal}><h2><UsersThree /> Extra Curricular Activities</h2>{recentActivities.map((item, index) => <article className="timeline-item" key={item.id || `${item.club}-${index}`}><span>{item.period}</span><h3>{item.club}</h3><strong>{item.position}</strong><p>{item.description}</p></article>)}</motion.div>
+      {sectionVisibility.experience && (currentEmployment.visible || recentExperience.length > 0) && <motion.div className="resume-block resume-block--wide" {...reveal}><h2>Experience</h2>{currentEmployment.visible && <article className="timeline-item timeline-item--current"><span>{currentEmployment.period || "Present"}</span><h3>{currentEmployment.company}</h3><strong>{currentEmployment.role}</strong><p>{currentEmployment.description}</p></article>}{recentExperience.map((item, index) => <article className="timeline-item" key={item.id || `${item.company}-${index}`}><span>{item.period}</span><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</motion.div>}
+      {sectionVisibility.extraCurricularActivities && recentActivities.length > 0 && <motion.div className="resume-block resume-block--wide" {...reveal}><h2><UsersThree /> Extra Curricular Activities</h2>{recentActivities.map((item, index) => <article className="timeline-item" key={item.id || `${item.club}-${index}`}><span>{item.period}</span><h3>{item.club}</h3><strong>{item.position}</strong><p>{item.description}</p></article>)}</motion.div>}
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Briefcase /> Projects</h2><div className="resume-project-grid">{content.projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowSquareOut size={20} /></a>)}</div></motion.div>
       <motion.div className="resume-block" {...reveal}><h2>Skills</h2><div className="skill-cloud skill-cloud--large">{content.about.skills.map((skill, index) => <span key={`resume-skill-${index}`}>{skill}</span>)}</div></motion.div>
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Trophy /> Awards</h2><p className="credential-intro">Select an award to view the original letter.</p><CredentialCards items={recentAwards} /></motion.div>

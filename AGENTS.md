@@ -24,3 +24,4 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Home presents Semester Results followed by Experience and a combined Awards & Certificates showcase; Resume also includes Extra Curricular Activities and Projects.
 - Home Experience uses an editorial vertical timeline: coral uppercase dates, serif company names, bold roles, full descriptions, and newest-to-oldest ordering rather than a card grid.
 - Current Employment is an optional Admin-controlled record, hidden by default; when enabled it appears above previous work on Home and Resume. Projects accept uploaded image logos, with the existing Phosphor icon as the fallback.
+- Semester Results, Experience, and Extra Curricular Activities support non-destructive visibility controls in Admin at both section and individual-item level. Hidden records remain stored in Supabase for future reuse.

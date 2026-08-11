@@ -4,6 +4,10 @@ import { supabase } from "./supabase";
 
 const ContentContext = createContext(null);
 
+function withItemVisibility(items = []) {
+  return items.map((item) => ({ ...item, visible: item.visible !== false }));
+}
+
 function mergeWithDefaults(savedContent) {
   if (!savedContent) return initialContent;
   return {
@@ -12,7 +16,11 @@ function mergeWithDefaults(savedContent) {
     profile: { ...initialContent.profile, ...savedContent.profile },
     about: { ...initialContent.about, ...savedContent.about },
     currentEmployment: { ...initialContent.currentEmployment, ...savedContent.currentEmployment },
+    sectionVisibility: { ...initialContent.sectionVisibility, ...savedContent.sectionVisibility },
     contact: { ...initialContent.contact, ...savedContent.contact },
+    semesterResults: withItemVisibility(savedContent.semesterResults || initialContent.semesterResults),
+    experience: withItemVisibility(savedContent.experience || initialContent.experience),
+    extraCurricularActivities: withItemVisibility(savedContent.extraCurricularActivities || initialContent.extraCurricularActivities),
   };
 }
 

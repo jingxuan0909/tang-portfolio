@@ -15,6 +15,11 @@
     "period": "",
     "description": ""
   },
+  "sectionVisibility": {
+    "semesterResults": true,
+    "experience": true,
+    "extraCurricularActivities": true
+  },
   "about": {
     "heading": "Curious. Disciplined. Security-Minded.",
     "paragraphs": [
@@ -78,27 +83,33 @@
   "semesterResults": [
     {
       "semester": "1",
-      "gpa": "3.52"
+      "gpa": "3.52",
+      "visible": true
     },
     {
       "semester": "2",
-      "gpa": "3.43"
+      "gpa": "3.43",
+      "visible": true
     },
     {
       "semester": "2.5",
-      "gpa": "3.73"
+      "gpa": "3.73",
+      "visible": true
     },
     {
       "semester": "3",
-      "gpa": "3.02"
+      "gpa": "3.02",
+      "visible": true
     },
     {
       "semester": "4",
-      "gpa": "3.23"
+      "gpa": "3.23",
+      "visible": true
     },
     {
       "semester": "4.5",
-      "gpa": "3.50"
+      "gpa": "3.50",
+      "visible": true
     }
   ],
   "education": [
@@ -118,25 +129,29 @@
       "company": "Sportsclick",
       "role": "Shop Assistant",
       "period": "March 2025 - May 2025",
-      "description": "Assisted customers, resolved product inquiries, managed stock arrangements, and processed sales transactions."
+      "description": "Assisted customers, resolved product inquiries, managed stock arrangements, and processed sales transactions.",
+      "visible": true
     },
     {
       "company": "Crave World Trading Sdn Bhd",
       "role": "Promoter",
       "period": "December 2024 - January 2025",
-      "description": "Promoted products, managed sampling and inventory, and delivered high-quality customer service."
+      "description": "Promoted products, managed sampling and inventory, and delivered high-quality customer service.",
+      "visible": true
     },
     {
       "company": "jinyeye",
       "role": "Sales and Operations Assistant",
       "period": "December 2023 - February 2024",
-      "description": "Handled customer inquiries, inventory, product displays, logistics, and order delivery schedules."
+      "description": "Handled customer inquiries, inventory, product displays, logistics, and order delivery schedules.",
+      "visible": true
     },
     {
       "company": "DEE Coffee",
       "role": "Store Manager",
       "period": "November 2022 - December 2022",
-      "description": "Managed daily store operations, customer transactions, hygiene standards, stock, and sales reporting."
+      "description": "Managed daily store operations, customer transactions, hygiene standards, stock, and sales reporting.",
+      "visible": true
     }
   ],
   "extraCurricularActivities": [
@@ -144,13 +159,15 @@
       "club": "Japanese Culture Society",
       "position": "General Affairs",
       "period": "January 2021 - November 2023",
-      "description": "Managed supplies, venue decoration, logistics, inventory, traditional costumes, cultural props, venue bookings, and equipment setup for weekly activities and the annual cultural workshop."
+      "description": "Managed supplies, venue decoration, logistics, inventory, traditional costumes, cultural props, venue bookings, and equipment setup for weekly activities and the annual cultural workshop.",
+      "visible": true
     },
     {
       "club": "Chess Society",
       "position": "Vice President",
       "period": "January 2018 - October 2020",
-      "description": "Supported International Chess, Chinese Chess, and Go activities; recruited and trained members, coordinated competitions, liaised with teacher advisors, and built partnerships for joint campus events."
+      "description": "Supported International Chess, Chinese Chess, and Go activities; recruited and trained members, coordinated competitions, liaised with teacher advisors, and built partnerships for joint campus events.",
+      "visible": true
     }
   ],
   "awards": [

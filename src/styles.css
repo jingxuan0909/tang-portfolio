@@ -222,6 +222,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .admin-card__heading { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 22px; }
 .admin-card__heading h2 { margin: 0; }
 .admin-card__heading p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.admin-card__heading-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 14px; }
 .admin-card__hint { margin: -6px 0 18px; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .admin-card__heading button, .delete-button { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: transparent; color: var(--text); padding: 9px 12px; border-radius: 6px; cursor: pointer; }
 .admin-card__heading button:hover { border-color: var(--coral); }
@@ -232,13 +233,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .admin-toggle input:checked + span { border-color: var(--coral); background: rgba(255,128,111,.2); }
 .admin-toggle input:checked + span::after { transform: translateX(22px); background: var(--coral); }
 .admin-toggle input:focus-visible + span { outline: 2px solid #fff; outline-offset: 3px; }
-.admin-toggle strong { min-width: 52px; color: var(--text); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+.admin-toggle strong { min-width: 52px; color: var(--text); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; white-space: nowrap; }
 .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .admin-grid + .admin-field, .admin-card > .admin-field + .admin-field { margin-top: 18px; }
 .icon-button { display: grid; place-items: center; border: 1px solid var(--line); color: #ff9b8d; background: #07142f; border-radius: 6px; cursor: pointer; }
 .delete-button { margin-top: 16px; color: #ff9b8d; }
 .admin-entry-list { display: grid; gap: 12px; }
 .admin-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: start; padding: 18px; border: 1px solid var(--line); background: #07142f; border-radius: 8px; }
+.admin-entry--hidden { border-style: dashed; opacity: .58; }
+.admin-entry--hidden:hover { opacity: .82; }
 .admin-entry--paragraph { align-items: start; }
 .admin-entry--paragraph p { margin: 0; color: var(--muted); line-height: 1.65; white-space: pre-wrap; }
 .admin-entry__details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px 22px; }
@@ -312,6 +315,7 @@ button:disabled, .upload-button:has(input:disabled) { opacity: .5; cursor: not-a
   .experience-more { margin-left: 21px; }
   .current-employment { padding: 23px 21px; }
   .admin-card__heading { flex-direction: column; }
+  .admin-card__heading-actions { width: 100%; justify-content: space-between; }
   .admin-project-summary { grid-template-columns: 1fr; }
   .results-grid article { flex-basis: calc((100% - 10px) / 2); min-height: 140px; }
   .project-row { grid-template-columns: 52px 1fr; }
