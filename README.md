@@ -1,6 +1,6 @@
 # Tang Keng Hin — Portfolio
 
-A responsive personal portfolio for a Computer Science (Cybersecurity) student, featuring an authenticated content management area, live project and resume content, and certificate uploads.
+A responsive personal portfolio for a Computer Science (Cybersecurity) student, built with React, Supabase, and Vercel. It includes a private content-management area for updating portfolio information without editing the source code.
 
 [![Live Website](https://img.shields.io/badge/Live_Website-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://tang-keng-hin.vercel.app)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -8,70 +8,76 @@ A responsive personal portfolio for a Computer Science (Cybersecurity) student, 
 
 ![Tang Keng Hin portfolio preview](public/og.png)
 
-## Live website
+## Live Website
 
-Visit the deployed portfolio at **[tang-keng-hin.vercel.app](https://tang-keng-hin.vercel.app)**.
+Visit the portfolio at [tang-keng-hin.vercel.app](https://tang-keng-hin.vercel.app).
 
-Public routes:
+| Route | Purpose |
+| --- | --- |
+| `/` | Home, featured projects, semester results, experience, awards, and certificates |
+| `/about` | About information and technical skills |
+| `/resume` | Education, experience, activities, skills, and projects |
+| `/contact` | Contact information and social links |
+| `/admin` | Authenticated portfolio content management |
+| `/reset-password` | Supabase password recovery flow |
 
-- `/` — Home and featured work
-- `/about` — Profile, background, and skills
-- `/resume` — Education, experience, activities, and projects
-- `/contact` — Contact details and social links
-- `/admin` — Private content management area
+## Overview
 
-## About the project
+The website presents my academic progress, technical projects, working experience, extracurricular activities, awards, certifications, and contact information in a polished dark interface.
 
-This portfolio presents academic progress, technical projects, experience, extracurricular activities, awards, and certifications in a polished dark interface. Content can be updated from the private Admin page without editing or redeploying the source code.
+Portfolio content is stored in Supabase PostgreSQL. Images and documents uploaded through Admin are stored in Supabase Storage. Vercel automatically builds and publishes the public website whenever the `main` branch is updated on GitHub.
 
-The public site is hosted on Vercel, while Supabase provides the PostgreSQL database, Admin authentication, and file storage.
+## Key Features
 
-## Features
+- Responsive multi-page portfolio for desktop and mobile
+- Dark visual design with page transitions and scroll animations
+- Full-colour profile portrait shared across the website
+- Semester results without exposing Current CGPA
+- Current Employment section that can be shown or hidden
+- Experience records ordered from newest to oldest
+- Editable projects with custom uploaded project logos
+- Clickable award and certificate PDF/image documents
+- GitHub, LinkedIn, Facebook, Gmail, and WhatsApp connections
+- Supabase email/password authentication for Admin
+- Add, edit, remove, show, and hide portfolio content
+- Upload and replace portraits, project logos, certificates, and awards
+- Password-reset flow through Supabase Auth
+- Row Level Security for database records and uploaded files
+- Automatic GitHub-to-Vercel deployments
 
-- Responsive multi-page React portfolio
-- Smooth page transitions, scroll reveals, and interactive motion
-- Full-colour profile portrait shared across the site
-- Semester results without displaying Current CGPA
-- Project, experience, education, and extracurricular sections
-- Clickable award and certificate documents
-- GitHub, LinkedIn, Facebook, Gmail, and WhatsApp links
-- Private Supabase-authenticated Admin page
-- Add, edit, and remove portfolio content
-- Upload portraits, PDFs, and certificate images
-- Password recovery flow
-- PostgreSQL content persistence with Row Level Security
-- Automatic Vercel deployments from GitHub
-
-## Technology stack
+## Technology Stack
 
 | Area | Technology |
 | --- | --- |
 | Frontend | React 19, Vite, React Router |
-| Styling | Custom CSS, DM Sans, Cormorant Garamond |
-| Motion | Motion for React |
+| Styling | Custom responsive CSS |
+| Typography | Cormorant Garamond, DM Sans |
+| Animation | Motion for React |
 | Icons | Phosphor Icons |
 | Database | Supabase PostgreSQL |
 | Authentication | Supabase Auth |
-| File storage | Supabase Storage |
+| File Storage | Supabase Storage |
 | Hosting | Vercel |
-| Version control | Git and GitHub |
+| Version Control | Git and GitHub |
 
 ## Architecture
 
 ```text
-Visitor / Admin
-      |
-      v
-Vercel-hosted React application
-      |
-      +--> Supabase Auth
-      +--> Supabase PostgreSQL
-      +--> Supabase Storage
+Public Visitor / Portfolio Admin
+                |
+                v
+      React application on Vercel
+                |
+       +--------+---------+
+       |        |         |
+       v        v         v
+ Supabase   PostgreSQL  Supabase
+   Auth       content   Storage
 ```
 
-Public visitors can read portfolio content and public files. Only the designated authenticated Admin user is permitted to create or update content and upload or remove files through Supabase Row Level Security policies.
+Public visitors receive read-only portfolio content and public documents. Authenticated write operations are restricted by Supabase Row Level Security policies.
 
-## Local development
+## Local Development
 
 ### Requirements
 
@@ -79,116 +85,124 @@ Public visitors can read portfolio content and public files. Only the designated
 - npm
 - A Supabase project
 
-### Installation
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/jingxuan0909/tang-portfolio.git
 cd tang-portfolio
+```
+
+### 2. Install Dependencies
+
+```bash
 npm install
 ```
 
-Copy the example environment file:
+### 3. Configure Environment Variables
+
+Create `.env.local` from the provided example:
 
 ```powershell
 Copy-Item .env.example .env.local
 ```
 
-Add the public Supabase project values to `.env.local`:
+Add the public Supabase values:
 
 ```env
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
 ```
 
-Start the local development server:
+The publishable key is designed for frontend use. Security must still be enforced through Supabase Row Level Security. Never place a database password, secret key, or `service_role` key in a frontend environment variable.
+
+### 4. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-The application will be available at the URL printed by Vite, normally `http://localhost:5173`.
+Vite prints the local URL, normally `http://localhost:5173`.
 
-## Supabase setup
+## Supabase Configuration
 
-The application expects the following Supabase resources:
+The application expects:
 
-### Database
+- A `public.portfolio_content` table
+- A single content record with `id = 1`
+- A JSON/JSONB `content` column
+- An `updated_at` timestamp column
+- A public Storage bucket named `portfolio-files`
+- One authorised Supabase Auth account for Admin access
 
-A `public.portfolio_content` table containing:
+The Storage bucket accepts PDF, JPEG, PNG, and WebP files up to 10 MB.
 
-| Column | Type | Purpose |
-| --- | --- | --- |
-| `id` | `smallint` | Singleton content record with ID `1` |
-| `content` | `jsonb` | Complete editable portfolio content |
-| `updated_at` | `timestamptz` | Last update timestamp |
+Run [`supabase/permissions.sql`](supabase/permissions.sql) in the Supabase SQL Editor to apply the portfolio database and Storage access policies. Review the authorised Admin email in that file before running it in a different Supabase project.
 
-The public `anon` role requires read access. Insert and update access should be restricted through Row Level Security to the designated Admin user's Supabase Auth UID.
-
-### Storage
-
-The public bucket is named `portfolio-files` and accepts:
-
-- PDF
-- JPEG
-- PNG
-- WebP
-
-The current upload limit is 10 MB per file. Public visitors can read files, while upload, update, and deletion operations are restricted to the Admin UID.
-
-### Authentication
-
-Admin access uses Supabase email and password authentication. Configure these redirect URLs in Supabase Auth:
+Configure these Supabase Auth redirect URLs:
 
 ```text
-http://localhost:4173/**
+http://localhost:5173/**
 https://tang-keng-hin.vercel.app/**
 ```
 
-Never commit database passwords, secret keys, service-role keys, or user passwords.
+## Admin Security
 
-## Available scripts
+The `/admin` address is intentionally reachable because browser routes cannot be treated as secrets. Access to content-management features is protected by Supabase authentication and Row Level Security.
+
+The application does not store the Admin password in the repository. Login credentials are managed by Supabase Auth.
+
+## Available Commands
 
 | Command | Description |
 | --- | --- |
 | `npm run dev` | Start the Vite development server |
-| `npm run build:vercel` | Create the production Vercel build in `dist` |
+| `npm run build` | Build and prepare the Sites-compatible output |
+| `npm run build:vercel` | Create the production Vercel build |
 | `npm run preview` | Preview a production build locally |
-| `npm run test:sites` | Run the hosting worker tests |
+| `npm run test:sites` | Test the optional Sites hosting worker |
 
 ## Deploying to Vercel
 
-1. Import this GitHub repository into Vercel.
-2. Select the Vite framework preset.
-3. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` as environment variables.
-4. Use `npm run build:vercel` as the build command.
-5. Use `dist` as the output directory.
-6. Deploy the project.
+1. Push the repository to GitHub.
+2. Import the GitHub repository into Vercel.
+3. Select the Vite framework preset.
+4. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in Vercel Environment Variables.
+5. Deploy the project.
 
-The included `vercel.json` provides the required build configuration and SPA route rewrites. Every push to the `main` branch triggers a new production deployment.
+The included [`vercel.json`](vercel.json) configures the Vercel build and SPA route rewrites. Every push to `main` triggers a new deployment when the GitHub repository is connected to Vercel.
 
-## Project structure
+## Project Structure
 
 ```text
 tang-portfolio/
-├── data/                  # Initial portfolio content
-├── public/                # Static images and documents
+├── data/                       Initial fallback portfolio content
+├── public/
+│   ├── assets/                 Website images and project logos
+│   └── uploads/                Initial award and certificate documents
 ├── src/
-│   ├── AdminPage.jsx      # Authenticated content editor
-│   ├── ResetPasswordPage.jsx
-│   ├── content-context.jsx
-│   ├── pages.jsx
-│   ├── supabase.js
-│   └── styles.css
-├── supabase/              # Database permission SQL
-├── vercel.json            # Vercel build and route configuration
-└── vite.config.mjs
+│   ├── AdminPage.jsx           Authenticated content-management interface
+│   ├── ResetPasswordPage.jsx   Supabase password recovery page
+│   ├── content-context.jsx     Supabase content loading and state
+│   ├── pages.jsx               Public portfolio pages
+│   ├── supabase.js             Supabase client configuration
+│   └── styles.css              Global responsive styling
+├── supabase/
+│   └── permissions.sql         Database and Storage RLS policies
+├── tests/                      Sites worker tests
+├── worker/                     Optional Sites hosting worker
+├── vercel.json                 Vercel deployment configuration
+└── vite.config.mjs             Vite configuration
 ```
+
+## Privacy and Repository Safety
+
+The repository ignores local environment variables, build output, dependencies, temporary files, logs, and QA screenshots. Before committing, always confirm that no password, database connection string, secret key, or `service_role` key is staged.
 
 ## Author
 
 **Tang Keng Hin**  
 Computer Science (Cybersecurity) Student
 
-- [GitHub](https://github.com/jingxuan0909)
 - [Portfolio](https://tang-keng-hin.vercel.app)
+- [GitHub](https://github.com/jingxuan0909)
 - [Email](mailto:kenghin0909@gmail.com)

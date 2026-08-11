@@ -25,3 +25,6 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Home Experience uses an editorial vertical timeline: coral uppercase dates, serif company names, bold roles, full descriptions, and newest-to-oldest ordering rather than a card grid.
 - Current Employment is an optional Admin-controlled record, hidden by default; when enabled it appears above previous work on Home and Resume. Projects accept uploaded image logos, with the existing Phosphor icon as the fallback.
 - Semester Results, Experience, and Extra Curricular Activities support non-destructive visibility controls in Admin at both section and individual-item level. Hidden records remain stored in Supabase for future reuse.
+- Uploaded project-logo images must use an edge-to-edge purple background with a centered coral mark and no visible rounded-square frame, border, or outer navy margin; Home, Resume, and Admin render them full-bleed without padding or extra crop scaling.
+- Admin project cards keep long descriptions and technology lists compact with line clamping, and place project actions in two clear rows below the content so controls never squeeze the project details into narrow columns.
+- Every Admin action that removes or deletes content uses the shared red danger-button treatment, including portrait, project logo, project, document, and list-item removal.

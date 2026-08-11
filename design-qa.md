@@ -55,6 +55,36 @@ final result: blocked
 
 ---
 
+## Admin project-card compact layout — 2026-08-12
+
+- **Source visual truth:** user-provided Admin screenshot `C:\Users\Acer\AppData\Local\Temp\codex-clipboard-c6af3b82-4d06-4fca-b8ae-f52d9ed0cf01.png` at `1212 x 693` pixels.
+- **Target state:** authenticated `/admin` Projects section at desktop width, with the same project content and dark theme.
+- **Implemented:** project content now uses the full card width; Title and Project URL form the first information row, while Description and Technologies span the available width below it.
+- **Implemented:** Description is clamped to three lines, Technologies to two lines, and long Project URLs truncate with an ellipsis. Full values remain available through Edit and native title hover text.
+- **Implemented:** actions are separated from content by a divider and rendered in two explicit rows: regular edit/logo actions first, destructive removal actions second.
+- **Responsive behavior:** project details collapse to one column below 600px and both action rows wrap without squeezing the information area.
+- **Automated checks:** Vite production build and all four Sites worker/package tests passed.
+- **Implementation screenshot:** unavailable.
+- **Viewport/density normalization:** unavailable because no implementation capture could be produced.
+- **Full-view and focused comparison evidence:** blocked because the in-app browser connection could not initialize in this session. Browser-rendered overflow, wrapping, focus-state, and console checks remain outstanding.
+
+final result: blocked
+
+---
+
+## Uploaded project-logo tile correction — 2026-08-12
+
+- **Source:** user-provided desired and current Project-list screenshots at the same narrow layout.
+- **Visible mismatch:** uploaded PNGs were rendered with 7px padding inside the existing 52px purple icon slot, producing an unintended tile-inside-tile appearance.
+- **Implemented:** removed the nested padding, changed uploaded artwork to cover the slot, and applied a centered 1.36 crop so the PNG's own purple tile becomes the single visible tile.
+- **Asset-level check:** the actual 1254px chatbot PNG was rendered through the production crop math at 52px; the double frame is removed and the coral mark remains centered and legible.
+- **Automated build check:** Vite Vercel production build passed.
+- **Browser comparison:** blocked because the in-app preview connection failed to initialize. A same-viewport application screenshot and browser-console inspection remain outstanding.
+
+final result: blocked
+
+---
+
 ## Current Employment and project-logo update — 2026-08-11
 
 - **Source:** user-provided Projects screenshot and the existing Home Experience design system.

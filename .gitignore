@@ -1,11 +1,52 @@
+# Dependencies
 node_modules/
+.pnpm-store/
+
+# Production and test output
 dist/
-.env*
+coverage/
+.vite/
+
+# Local environment variables and secrets
+.env
+.env.*
 !.env.example
-tmp/
+.dev.vars
+.dev.vars.*
+
+# Deployment provider local state
+.vercel/
+.wrangler/
+supabase/.temp/
+
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary files and generated archives
+tmp/
+temp/
+.cache/
+*.tmp
 *.tgz
 *.tar.gz
+
+# Browser, QA, and visual-comparison captures
 qa-*.png
 implementation-*.png
 design-qa*.png
+*-comparison.png
+
+# Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
