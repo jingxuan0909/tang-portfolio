@@ -92,7 +92,7 @@ const projectFields = [
   { key: "url", label: "Project URL" },
   { key: "shortDescription", label: "Short description (Home page)", multiline: true },
   { key: "description", label: "Detailed description (Projects page)", multiline: true },
-  { key: "techInput", label: "Technologies (comma separated)" },
+  { key: "techInput", label: "Technologies (comma separated)", multiline: true },
 ];
 const semesterFields = [{ key: "semester", label: "Semester" }, { key: "gpa", label: "GPA" }];
 const educationFields = [{ key: "institution", label: "Institution" }, { key: "qualification", label: "Qualification" }, { key: "period", label: "Period" }];
