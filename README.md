@@ -43,6 +43,11 @@ Portfolio content is stored in Supabase PostgreSQL. Images and PDF documents upl
 - GitHub, LinkedIn, Facebook, Gmail, and WhatsApp connections
 - Collapsible Admin sections for managing long content collections
 - Modal-based add and edit workflows with success feedback
+- Keyboard-safe dialogs with focus trapping, Escape close, and focus restoration
+- Delete confirmation and visible unsaved-change warnings
+- Safe cleanup of replaced or removed Supabase Storage files after database saves
+- Accessible read-only Guest controls announced as unavailable
+- Lazy-loaded Admin and password recovery routes for a smaller public bundle
 - Upload, replace, remove, show, hide, add, edit, and delete controls
 - Automatic GitHub-to-Vercel deployments
 
@@ -199,6 +204,8 @@ The Resend API key belongs only in Supabase's encrypted SMTP configuration. Do n
 | `npm run build` | Build and prepare the Sites-compatible output |
 | `npm run build:vercel` | Create the production Vercel build |
 | `npm run preview` | Preview a production build locally |
+| `npm test` | Run Admin, authentication, recovery, storage, visibility, and sorting tests |
+| `npm run test:watch` | Re-run application tests while code changes |
 | `npm run test:sites` | Test the optional Sites hosting worker |
 
 ## Deploying to Vercel
@@ -220,6 +227,7 @@ tang-portfolio/
 |   |-- assets/                 Website images and project logos
 |   `-- uploads/                Initial award and certificate documents
 |-- src/
+|   |-- admin-utils.js          Safe Storage URL, dirty-state, and technology helpers
 |   |-- AdminPage.jsx           Admin authentication and content management
 |   |-- ResetPasswordPage.jsx   OTP password recovery page
 |   |-- content-context.jsx     Supabase content loading and state
@@ -229,7 +237,7 @@ tang-portfolio/
 |-- supabase/
 |   |-- email-otp-templates.md  Supabase OTP email template reference
 |   `-- permissions.sql         Database and Storage RLS policies
-|-- tests/                      Sites worker tests
+|-- tests/                      Admin, recovery, utility, and Sites worker tests
 |-- worker/                     Optional Sites hosting worker
 |-- vercel.json                 Vercel deployment configuration
 `-- vite.config.mjs             Vite configuration

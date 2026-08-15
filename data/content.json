@@ -235,6 +235,14 @@
   ],
   "experience": [
     {
+      "id": "a0689053-9cbe-4c0b-af07-6f10a8af2a91",
+      "company": "Simply Data",
+      "role": "SOC L1",
+      "period": "March 2026 - April 2026",
+      "description": "Monitored daily network security alerts and investigated whether activities were legitimate or potentially suspicious. Reviewed inbound and outbound network traffic, analyzed IP addresses, identified false positives caused by authorized internal activities, and escalated suspicious incidents to the L2 team. Created and managed security tickets, documented investigation findings, and communicated relevant evidence and incident updates to the L2 team for further investigation and follow-up.",
+      "visible": true
+    },
+    {
       "company": "Sportsclick",
       "role": "Shop Assistant",
       "period": "March 2025 - May 2025",

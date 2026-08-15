@@ -13,6 +13,9 @@ function withItemVisibility(items = []) {
 const canonicalProjectsByTitle = new Map(
   initialContent.projects.map((project) => [project.title.toLowerCase(), project]),
 );
+const canonicalExperienceByCompany = new Map(
+  initialContent.experience.map((item) => [item.company.toLowerCase(), item]),
+);
 
 // Upgrades one saved project while preserving its database ID and uploaded logo.
 function mergeProject(project) {
@@ -36,6 +39,16 @@ function mergeProject(project) {
   };
 }
 
+// Repairs the previously truncated Simply Data sentence from older saved content.
+function mergeExperience(item) {
+  const canonicalItem = canonicalExperienceByCompany.get(item.company?.trim().toLowerCase());
+  const description = item.description?.trim() || "";
+  if (canonicalItem && /communicated\s*$/i.test(description)) {
+    return { ...item, description: canonicalItem.description };
+  }
+  return item;
+}
+
 // Combines Supabase content with safe local defaults for any missing fields.
 function mergeWithDefaults(savedContent) {
   if (!savedContent) return initialContent;
@@ -49,7 +62,7 @@ function mergeWithDefaults(savedContent) {
     contact: { ...initialContent.contact, ...savedContent.contact },
     semesterResults: withItemVisibility(savedContent.semesterResults || initialContent.semesterResults),
     projects: (savedContent.projects || initialContent.projects).map(mergeProject),
-    experience: withItemVisibility(savedContent.experience || initialContent.experience),
+    experience: withItemVisibility(savedContent.experience || initialContent.experience).map(mergeExperience),
     extraCurricularActivities: withItemVisibility(savedContent.extraCurricularActivities || initialContent.extraCurricularActivities),
   };
 }

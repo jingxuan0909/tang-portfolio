@@ -33,3 +33,8 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Skills, Projects, Semester Results, Current Employment, Experience, Extra Curricular Activities, Contact, Awards, Certificates, and Education are collapsible Admin sections and start closed to keep the workspace compact.
 - The Home hero portrait keeps its desktop dimensions but uses a smaller, balanced size on phones.
 - The mobile navigation opens as an opaque layer above the page content so menu labels never overlap the hero name.
+- Replacing or removing an uploaded file deletes the superseded object only after the portfolio content is saved successfully, and only when its URL belongs to this project's public `portfolio-files` Supabase bucket. Local `/uploads` paths and external URLs are never deleted automatically.
+- Destructive Admin actions require confirmation, and the workspace warns authenticated editors before leaving with unsaved changes.
+- Guest Admin controls remain visibly present for demonstration but expose disabled semantics to assistive technology and cannot be activated.
+- Admin dialogs support Escape, keyboard focus containment, and focus restoration to the control that opened them.
+- Admin and password-recovery routes are lazy-loaded so their code is not included in the initial public-page route.
