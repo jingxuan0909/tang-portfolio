@@ -11,13 +11,22 @@ coverage/
 .env
 .env.*
 !.env.example
+.envrc
+.envrc.*
 .dev.vars
 .dev.vars.*
+*.pem
+*.key
+*.p12
+*.pfx
+credentials/
+secrets/
 
 # Deployment provider local state
 .vercel/
 .wrangler/
 supabase/.temp/
+supabase/.branches/
 
 # Logs
 *.log
@@ -30,9 +39,11 @@ pnpm-debug.log*
 tmp/
 temp/
 .cache/
+.parcel-cache/
 *.tmp
 *.tgz
 *.tar.gz
+*.bak
 
 # Browser, QA, and visual-comparison captures
 qa-*.png

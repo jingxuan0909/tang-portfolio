@@ -307,15 +307,11 @@ export function AdminPage() {
     setDraft(null);
     setLoginStep("credentials");
   }
-  async function requestPasswordReset() {
-    setMessage(""); const email = credentials.email.trim();
-    if (!email) { setMessage("Enter your Admin email first."); return; }
-    setAuthBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
-    setAuthBusy(false);
-    if (error) { setMessage(error.message); return; }
-    sessionStorage.setItem(RECOVERY_EMAIL_KEY, email);
-    navigate("/reset-password", { state: { email, codeSent: true } });
+  function openPasswordRecovery() {
+    setMessage("");
+    sessionStorage.removeItem(RECOVERY_EMAIL_KEY);
+    sessionStorage.removeItem("tang-admin-recovery-verified");
+    navigate("/reset-password", { state: { email: credentials.email.trim() } });
   }
   function openGuestPreview() { setGuestMode(true); setMessage(""); }
   function closeGuestPreview() { setGuestMode(false); setMessage(""); }
@@ -357,7 +353,7 @@ export function AdminPage() {
         <Field label="Password" type="password" autoComplete="off" value={credentials.password} onChange={(password) => setCredentials({ ...credentials, password })} required />
         {message && <p className="admin-message admin-message--error">{message}</p>}
         <button className="button button--primary" type="submit" disabled={!isSupabaseConfigured || authBusy}>{authBusy ? "Checking…" : "Sign in"}</button>
-        <button className="button button--ghost" type="button" onClick={requestPasswordReset} disabled={!isSupabaseConfigured || authBusy}>Forgot password?</button>
+        <button className="button button--ghost" type="button" onClick={openPasswordRecovery} disabled={!isSupabaseConfigured || authBusy}>Forgot password?</button>
         <div className="admin-login__divider"><span>Guest access</span></div>
         <button className="button button--guest" type="button" onClick={openGuestPreview}><UserFocus size={20} /> Explore Admin as Guest</button>
         <p className="admin-login__guest-note">View the complete Admin workspace safely. Editing, uploading, saving, and deleting are locked.</p>
