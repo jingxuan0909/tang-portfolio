@@ -3,6 +3,7 @@ import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+// Resolve every build path from the repository root instead of the current shell.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dist = path.join(root, "dist");
 const index = path.join(dist, "client", "index.html");
@@ -10,10 +11,12 @@ const worker = path.join(root, "worker", "index.js");
 const hosting = path.join(root, ".openai", "hosting.json");
 const content = path.join(root, "data", "content.json");
 
+// Stop early when a required OpenAI Sites build input is missing.
 for (const file of [index, worker, hosting, content]) {
   if (!existsSync(file)) throw new Error("Missing Sites build input: " + file);
 }
 
+// Copy the worker, hosting settings, and starter content into the Sites package.
 mkdirSync(path.join(dist, "server"), { recursive: true });
 mkdirSync(path.join(dist, ".openai"), { recursive: true });
 copyFileSync(worker, path.join(dist, "server", "index.js"));

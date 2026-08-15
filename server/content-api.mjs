@@ -2,12 +2,14 @@ import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+// This legacy development API edits local JSON when running the Vite server.
 const CONTENT_FILE = path.resolve("data/content.json");
 const UPLOAD_DIR = path.resolve("public/uploads");
 const sessions = new Map();
 const loginAttempts = new Map();
 const SESSION_TTL = 8 * 60 * 60 * 1000;
 
+// Sends a no-cache JSON response through the Node development server.
 function json(res, status, payload, headers = {}) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -16,6 +18,7 @@ function json(res, status, payload, headers = {}) {
   res.end(JSON.stringify(payload));
 }
 
+// Reads a small JSON body and stops oversized requests.
 async function readBody(req) {
   let raw = "";
   for await (const chunk of req) {
@@ -25,6 +28,7 @@ async function readBody(req) {
   return raw ? JSON.parse(raw) : {};
 }
 
+// Converts the Cookie header into an easy key-value object.
 function cookies(req) {
   return Object.fromEntries(
     (req.headers.cookie || "")
@@ -35,10 +39,12 @@ function cookies(req) {
   );
 }
 
+// Hashes session tokens before storing them in memory.
 function hashToken(token) {
   return createHash("sha256").update(token).digest("hex");
 }
 
+// Loads a valid non-expired local development session.
 function getSession(req) {
   const token = cookies(req).portfolio_session;
   if (!token) return null;
@@ -51,6 +57,7 @@ function getSession(req) {
   return { ...session, key };
 }
 
+// Checks a password against its stored scrypt salt and hash.
 function validPassword(password, encoded) {
   const [salt, expectedHex] = (encoded || "").split(":");
   if (!salt || !expectedHex) return false;
@@ -59,6 +66,7 @@ function validPassword(password, encoded) {
   return expected.length === actual.length && timingSafeEqual(actual, expected);
 }
 
+// Blocks an IP after five failed logins within fifteen minutes.
 function isRateLimited(ip) {
   const now = Date.now();
   const recent = (loginAttempts.get(ip) || []).filter((time) => now - time < 15 * 60 * 1000);
@@ -66,10 +74,12 @@ function isRateLimited(ip) {
   return recent.length >= 5;
 }
 
+// Records the time of one failed login attempt.
 function recordFailure(ip) {
   loginAttempts.set(ip, [...(loginAttempts.get(ip) || []), Date.now()]);
 }
 
+// Checks required sections and safe maximum list sizes.
 function validateContent(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid content");
   if (!Array.isArray(value.projects) || value.projects.length > 50) throw new Error("Invalid projects");
@@ -81,6 +91,7 @@ function validateContent(value) {
   return value;
 }
 
+// Reads an upload while enforcing the ten-megabyte limit.
 async function readUpload(req, limit = 10 * 1024 * 1024) {
   const chunks = [];
   let size = 0;
@@ -100,16 +111,19 @@ const UPLOAD_EXTENSIONS = {
   "image/webp": ".webp",
 };
 
+// Writes through a temporary file to reduce the chance of partial JSON.
 async function saveContent(content) {
   const temp = `${CONTENT_FILE}.tmp`;
   await writeFile(temp, `${JSON.stringify(content, null, 2)}\n`, "utf8");
   await rename(temp, CONTENT_FILE);
 }
 
+// Adds the legacy local /api routes to the Vite development server.
 export function contentApiPlugin(env) {
   return {
     name: "portfolio-content-api",
     configureServer(server) {
+      // Handle only /api requests and pass normal assets back to Vite.
       server.middlewares.use(async (req, res, next) => {
         const url = new URL(req.url, "http://local.test");
         if (!url.pathname.startsWith("/api/")) return next();

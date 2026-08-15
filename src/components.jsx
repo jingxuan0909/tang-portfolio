@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useContent } from "./content-context";
 
+// Reusable scroll-reveal animation settings for public page sections.
 export const reveal = {
   initial: { opacity: 0, y: 28 },
   whileInView: { opacity: 1, y: 0 },
@@ -11,6 +12,7 @@ export const reveal = {
   transition: { duration: 0.72, ease: [0.22, 1, 0.36, 1] },
 };
 
+// Moves the aurora image slowly while the visitor scrolls to create depth.
 export function AuroraBackground({ compact = false }) {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 1200], [0, compact ? 70 : 150]);
@@ -22,8 +24,10 @@ export function AuroraBackground({ compact = false }) {
   );
 }
 
+// Renders desktop navigation and the expandable mobile menu.
 export function Header() {
   const [open, setOpen] = useState(false);
+  // One list keeps desktop and mobile navigation labels consistent.
   const links = [["/", "Home"], ["/about", "About"], ["/projects", "Projects"], ["/resume", "Resume"], ["/contact", "Contact"]];
   return (
     <header className="site-header">
@@ -38,6 +42,7 @@ export function Header() {
   );
 }
 
+// Reads live contact data so Admin changes update every footer link.
 export function Footer() {
   const { content } = useContent();
   if (!content) return null;
@@ -61,14 +66,17 @@ export function Footer() {
   );
 }
 
+// Wraps every public page with the shared background, header, and footer.
 export function Layout({ children, compactBackground = true }) {
   return <div className="app-shell"><AuroraBackground compact={compactBackground} /><Header /><main>{children}</main><Footer /></div>;
 }
 
+// Creates a consistent animated heading for inner pages.
 export function PageIntro({ eyebrow, title, children }) {
   return <motion.section className="page-intro" {...reveal}><span className="eyebrow">{eyebrow}</span><h1>{title}</h1>{children}</motion.section>;
 }
 
+// Builds contact buttons only for links that have been configured.
 export function ContactButtons({ contact, large = false }) {
   return <div className={`contact-buttons ${large ? "contact-buttons--large" : ""}`}>
     <a className="contact-button contact-button--primary" href={`mailto:${contact.email}`}><EnvelopeSimple size={22} />Gmail<ArrowUpRight size={18} /></a>
@@ -79,6 +87,7 @@ export function ContactButtons({ contact, large = false }) {
   </div>;
 }
 
+// Appears briefly while Supabase content is being loaded.
 export function LoadingScreen() {
   return <div className="loading-screen"><span /><p>Loading portfolio</p></div>;
 }

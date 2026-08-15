@@ -4,6 +4,7 @@
 @import "@fontsource/cormorant-garamond/500.css";
 @import "@fontsource/cormorant-garamond/600.css";
 
+/* Shared colors, typefaces, and spacing values used across the website. */
 :root {
   color: #f7f1ea;
   background: #061639;
@@ -37,6 +38,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .aurora-bg__veil { position: absolute; inset: 0; background: rgba(2, 11, 35, .16); }
 .aurora-bg--compact { height: 760px; opacity: .72; }
 
+/* Public header and navigation. */
 .site-header { width: min(1180px, calc(100% - 48px)); height: 88px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); z-index: 30; }
 .brand { width: 42px; height: 42px; display: grid; place-items: center; font-weight: 700; letter-spacing: .08em; color: var(--coral); }
 .brand span { font-size: 15px; }
@@ -47,6 +49,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .nav a.active { color: #fff; }
 .menu-button { display: none; background: transparent; color: var(--text); border: 0; }
 
+/* Home hero, portrait, and primary actions. */
 .hero { width: min(1180px, calc(100% - 48px)); min-height: 650px; margin: 0 auto; padding: 90px 0 80px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr); gap: 80px; align-items: center; }
 .hero__copy { max-width: 650px; }
 .eyebrow, .micro-label { display: block; color: var(--coral); font-size: 12px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
@@ -70,6 +73,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .skill-cloud { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 28px; }
 .skill-cloud span { padding: 9px 13px; border: 1px solid var(--line); color: #c7d3e9; font-size: 12px; border-radius: 7px; background: rgba(5, 18, 53, .28); }
 .skill-cloud--large span { padding: 11px 15px; font-size: 14px; }
+/* Project preview cards and the detailed Projects page. */
 .project-preview h2 { margin: 16px 0 18px; font: 600 42px/1 var(--serif); }
 .project-list { display: grid; gap: 12px; }
 .project-row { display: grid; grid-template-columns: 60px 1fr auto; gap: 16px; align-items: center; padding: 16px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; transition: transform .3s ease, background .3s ease, border-color .3s ease; }
@@ -129,12 +133,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .connect-panel { display: flex; align-items: center; justify-content: space-between; gap: 44px; padding: 34px; border: 1px solid var(--line); background: rgba(7, 24, 63, .72); border-radius: 14px; }
 .connect-panel h2 { font-size: 34px; margin: 0 0 10px; }
 .connect-panel p { max-width: 480px; margin: 0; }
+/* Reusable social and email buttons. */
 .contact-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
 .contact-button { min-height: 60px; display: inline-flex; align-items: center; gap: 12px; padding: 0 18px; border: 1px solid var(--line); border-radius: 8px; background: rgba(8, 24, 61, .76); transition: transform .25s ease, border-color .25s ease, background .25s ease; }
 .contact-button svg:last-child { margin-left: 8px; }
 .contact-button:hover { transform: translateY(-4px); border-color: var(--coral); background: rgba(29, 54, 116, .88); }
 .contact-button--primary { background: var(--coral); color: #230b13; border-color: var(--coral); }
 
+/* Shared inner-page introductions and content layouts. */
 .page-intro { padding: 110px 0 70px; max-width: 1180px; }
 .page-intro h1, .contact-page h1 { max-width: 920px; margin: 18px 0 24px; font: 600 clamp(62px, 8vw, 112px)/.88 var(--serif); letter-spacing: -.035em; }
 .page-intro p { max-width: 720px; color: #d3dced; font: 500 23px/1.55 var(--serif); }
@@ -146,6 +152,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .prose p { margin: 0 0 26px; color: #d3dced; font: 500 24px/1.55 var(--serif); }
 .prose h2 { margin-top: 60px; font: 600 43px var(--serif); }
 
+/* Resume blocks, timelines, and project grid. */
 .resume-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; }
 .resume-block { padding: 28px; border-top: 1px solid var(--line-strong); background: rgba(4, 17, 48, .34); }
 .resume-block--wide { grid-column: 1 / -1; }
@@ -174,6 +181,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .credential-card:hover .credential-card__arrow { color: var(--coral); transform: translate(2px, -2px); }
 .resume-project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 
+/* Dedicated Contact page. */
 .contact-page { width: min(960px, calc(100% - 48px)); min-height: 670px; margin: 0 auto; padding: 140px 0 150px; display: grid; place-items: center; text-align: center; }
 .contact-page h1 { margin-inline: auto; }
 .contact-page p { max-width: 680px; margin: 0 auto 40px; color: var(--muted); font-size: 18px; line-height: 1.7; }
@@ -181,6 +189,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .contact-buttons--large { justify-content: center; }
 .contact-buttons--large .contact-button { min-width: 190px; justify-content: center; }
 
+/* Footer profile, navigation, contact links, and Admin entry. */
 .footer { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 58px 0 32px; display: grid; grid-template-columns: 1.6fr .65fr .8fr; gap: 70px; border-top: 1px solid var(--line-strong); }
 .footer__profile { display: grid; grid-template-columns: 76px 1fr; gap: 20px; align-items: start; }
 .footer__profile img { width: 76px; height: 76px; object-fit: cover; object-position: 50% 18%; border: 1px solid rgba(255, 128, 111, .62); border-radius: 10px; box-shadow: 0 12px 30px rgba(4, 11, 35, .32); filter: none; }
@@ -200,12 +209,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .footer__admin { min-height: 38px; display: inline-flex; align-items: center; padding: 0 16px; border: 1px solid var(--line); color: #cbd5e8 !important; text-decoration: none !important; text-transform: uppercase; letter-spacing: .12em; font-size: 10px; transition: color .2s ease, border-color .2s ease, transform .2s ease; }
 .footer__admin:hover { color: var(--coral) !important; border-color: var(--coral); transform: translateY(-2px); }
 
+/* Loading indicators for public content and secure Admin checks. */
 .loading-screen, .admin-loading { min-height: 100vh; display: grid; place-items: center; background: var(--bg-deep); color: var(--muted); }
 .loading-screen { align-content: center; gap: 15px; }
 .loading-screen span { width: 42px; height: 42px; border: 2px solid var(--line); border-top-color: var(--coral); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .notice { width: min(1180px, calc(100% - 48px)); margin: 0 auto; color: var(--coral); }
 
+/* Admin sign-in, OTP, and password recovery screens. */
 .admin-login, .admin-page { min-height: 100vh; background: #07112a; }
 .admin-login { display: grid; place-items: center; padding: 24px; }
 .admin-login__panel { width: min(460px, 100%); padding: 42px; border: 1px solid var(--line-strong); background: #0c1a3a; box-shadow: 0 30px 100px rgba(0,0,0,.35); }
@@ -243,6 +254,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .admin-portrait__controls p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .admin-portrait__actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .admin-portrait__actions .delete-button { margin: 0; }
+/* Authenticated Admin workspace and read-only Guest Preview. */
 .admin-page { padding: 38px max(24px, calc((100vw - 1180px) / 2)) 100px; }
 .admin-guest-banner { display: flex; align-items: flex-start; gap: 14px; margin-top: 24px; padding: 16px 18px; border: 1px solid rgba(255,128,111,.42); border-radius: 8px; background: rgba(255,128,111,.07); color: #ffd2ca; }
 .admin-guest-banner > svg { flex: 0 0 auto; color: var(--coral); }
@@ -290,6 +302,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .admin-grid + .admin-field, .admin-card > .admin-field + .admin-field { margin-top: 18px; }
 .icon-button { display: grid; place-items: center; border: 1px solid var(--line); color: #ff9b8d; background: #07142f; border-radius: 6px; cursor: pointer; }
 .delete-button { margin-top: 16px; color: #ff9b8d; }
+/* Reusable Admin content rows and action buttons. */
 .admin-entry-list { display: grid; gap: 12px; }
 .admin-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: start; padding: 18px; border: 1px solid var(--line); background: #07142f; border-radius: 8px; }
 .admin-entry--hidden { border-style: dashed; opacity: .58; }
@@ -331,6 +344,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .admin-toast { position: fixed; z-index: 80; top: 20px; right: 20px; width: min(440px, calc(100vw - 40px)); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 16px 18px; border: 1px solid rgba(121, 227, 189, .5); border-radius: 8px; background: #0c2b35; color: #aaf4da; box-shadow: 0 20px 60px rgba(0, 0, 0, .38); }
 .admin-toast--error { border-color: rgba(255, 155, 141, .55); background: #351a2a; color: #ffc2b9; }
 .admin-toast button { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
+/* Add and Edit modal dialogs. */
 .admin-modal-backdrop { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(1, 7, 21, .78); backdrop-filter: blur(8px); }
 .admin-modal { width: min(720px, 100%); max-height: min(760px, calc(100vh - 48px)); overflow: auto; border: 1px solid var(--line-strong); border-radius: 12px; background: #0b1938; box-shadow: 0 36px 100px rgba(0, 0, 0, .6); }
 .admin-modal > header { position: sticky; top: 0; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 24px 26px 18px; border-bottom: 1px solid var(--line); background: #0b1938; }
@@ -341,6 +355,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .admin-modal footer { position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 10px; padding: 18px 26px; border-top: 1px solid var(--line); background: #0b1938; }
 button:disabled, .upload-button:has(input:disabled) { opacity: .5; cursor: not-allowed; }
 
+/* Tablet layout adjustments. */
 @media (max-width: 900px) {
   .site-header { width: min(100% - 32px, 1180px); height: 72px; }
   .menu-button { display: grid; place-items: center; }
@@ -368,6 +383,7 @@ button:disabled, .upload-button:has(input:disabled) { opacity: .5; cursor: not-a
   .admin-entry__actions, .admin-document__actions { justify-content: flex-start; }
 }
 
+/* Mobile layout, navigation, portrait, and Admin controls. */
 @media (max-width: 600px) {
   .site-header, .hero, .section-wrap, .content-section, .page-intro, .projects-page-hero, .footer { width: calc(100% - 32px); }
   .hero { min-height: auto; padding: 58px 0 62px; }
@@ -426,6 +442,7 @@ button:disabled, .upload-button:has(input:disabled) { opacity: .5; cursor: not-a
   .footer__bottom { align-items: flex-start; flex-direction: column; }
 }
 
+/* Respect visitors who prefer reduced animation. */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

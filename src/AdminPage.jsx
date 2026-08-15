@@ -8,19 +8,23 @@ import { isSupabaseConfigured, supabase } from "./supabase";
 const DEFAULT_PORTRAIT = "/assets/default-avatar.png";
 const ADMIN_OTP_VERIFIED_KEY = "tang-admin-otp-verified";
 const RECOVERY_EMAIL_KEY = "tang-admin-recovery-email";
+// Guest Preview reads this context to disable every editing control.
 const AdminReadOnlyContext = createContext(false);
 
+// Reusable labelled input that can also render a larger textarea.
 function Field({ label, value, onChange, multiline = false, type = "text", autoComplete, required = false }) {
   const readOnly = useContext(AdminReadOnlyContext);
   const Component = multiline ? "textarea" : "input";
   return <label className="admin-field"><span>{label}</span><Component type={multiline ? undefined : type} value={value ?? ""} onChange={(event) => onChange(event.target.value)} rows={multiline ? 4 : undefined} autoComplete={autoComplete} required={required} disabled={readOnly} /></label>;
 }
 
+// Switches a section or individual item between public and hidden states.
 function VisibilityToggle({ checked, onChange, visibleLabel = "Visible", hiddenLabel = "Hidden" }) {
   const readOnly = useContext(AdminReadOnlyContext);
   return <label className="admin-toggle"><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} disabled={readOnly} /><span aria-hidden="true" /><strong>{checked ? visibleLabel : hiddenLabel}</strong></label>;
 }
 
+// Displays Add and Edit forms in a focused modal dialog.
 function EditorModal({ title, confirmLabel, confirmDisabled = false, onCancel, onConfirm, children }) {
   return <div className="admin-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onCancel()}>
     <section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
@@ -33,6 +37,7 @@ function EditorModal({ title, confirmLabel, confirmDisabled = false, onCancel, o
   </div>;
 }
 
+// Groups one content type and optionally lets the Admin collapse a long section.
 function AdminCard({ title, description, actions, children, collapsible = false }) {
   const [open, setOpen] = useState(!collapsible);
   const contentId = useId();
@@ -42,10 +47,12 @@ function AdminCard({ title, description, actions, children, collapsible = false 
   </section>;
 }
 
+// Edits simple text arrays such as About paragraphs and Skills.
 function ListEditor({ title, description, items, onChange, setMessage, multiline = false, addLabel = "Add", collapsible = false }) {
   const [editor, setEditor] = useState(null);
   const openAdd = () => setEditor({ mode: "add", index: -1, value: "" });
   const openEdit = (index) => setEditor({ mode: "edit", index, value: items[index] });
+  // Applies the modal value to the local draft; Save changes publishes it later.
   function confirm() {
     const nextItems = editor.mode === "add" ? [...items, editor.value] : items.map((item, index) => index === editor.index ? editor.value : item);
     onChange(nextItems);
@@ -62,6 +69,7 @@ function ListEditor({ title, description, items, onChange, setMessage, multiline
   </AdminCard>;
 }
 
+// Edits structured lists such as Education, Experience, and Semester Results.
 function RecordEditor({ title, description, items, fields, createItem, onChange, setMessage, addLabel = "Add", allowVisibility = false, sectionVisible = true, onSectionVisibilityChange }) {
   const [editor, setEditor] = useState(null);
   const openAdd = () => setEditor({ mode: "add", index: -1, value: createItem() });
@@ -76,6 +84,7 @@ function RecordEditor({ title, description, items, fields, createItem, onChange,
     onChange(items.filter((_, itemIndex) => itemIndex !== index));
     setMessage(`${title} removed successfully. Select Save changes to publish.`);
   }
+  // Hiding keeps the record in Supabase but removes it from public pages.
   function toggleItem(index) {
     const nextVisible = items[index].visible === false;
     onChange(items.map((item, itemIndex) => itemIndex === index ? { ...item, visible: nextVisible } : item));
@@ -87,6 +96,7 @@ function RecordEditor({ title, description, items, fields, createItem, onChange,
   </AdminCard>;
 }
 
+// Field definitions keep each generated editor consistent and easy to extend.
 const projectFields = [
   { key: "title", label: "Title" },
   { key: "url", label: "Project URL" },
@@ -99,12 +109,14 @@ const educationFields = [{ key: "institution", label: "Institution" }, { key: "q
 const experienceFields = [{ key: "company", label: "Company" }, { key: "role", label: "Role" }, { key: "period", label: "Period" }, { key: "description", label: "Description", multiline: true }];
 const activityFields = [{ key: "club", label: "Club / organisation" }, { key: "position", label: "Position" }, { key: "period", label: "Period" }, { key: "description", label: "Description", multiline: true }];
 
+// Validates and uploads a real file to the public portfolio-files Storage bucket.
 async function uploadFile(file, { imagesOnly = false } = {}) {
   const imageTypes = ["image/jpeg", "image/png", "image/webp"];
   const allowedTypes = imagesOnly ? imageTypes : ["application/pdf", ...imageTypes];
   if (!allowedTypes.includes(file.type)) throw new Error(imagesOnly ? "Only JPG, PNG, and WebP images are allowed." : "Only PDF, JPG, PNG, and WebP files are allowed.");
   if (file.size > 10 * 1024 * 1024) throw new Error("File must be 10 MB or smaller.");
   const extension = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "bin";
+  // A unique path prevents two uploaded files from overwriting each other.
   const path = `${new Date().getFullYear()}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
   const { error } = await supabase.storage.from("portfolio-files").upload(path, file, { contentType: file.type, upsert: false });
   if (error) throw error;
@@ -112,12 +124,14 @@ async function uploadFile(file, { imagesOnly = false } = {}) {
   return data.publicUrl;
 }
 
+// Adds https:// when the Admin enters a domain without a URL protocol.
 function normalizeExternalUrl(value) {
   const trimmed = String(value || "").trim();
   if (!trimmed) return "";
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
+// Uploads, previews, or replaces the portrait with the default avatar.
 function PortraitEditor({ value, onChange, onUploadComplete, setMessage }) {
   const readOnly = useContext(AdminReadOnlyContext);
   const [uploading, setUploading] = useState(false);
@@ -127,6 +141,7 @@ function PortraitEditor({ value, onChange, onUploadComplete, setMessage }) {
     try {
       const url = await uploadFile(file, { imagesOnly: true });
       onChange(url);
+      // Portrait uploads publish immediately so the uploaded URL is not lost.
       await onUploadComplete(url);
       setMessage("Portrait uploaded and published successfully.");
     } catch (error) { setMessage(error.message); } finally { setUploading(false); }
@@ -138,15 +153,19 @@ function PortraitEditor({ value, onChange, onUploadComplete, setMessage }) {
   return <div className="admin-portrait"><div className="admin-portrait__preview"><img src={value || DEFAULT_PORTRAIT} alt="Current portrait preview" /></div><div className="admin-portrait__controls"><strong>Current portrait</strong><p>Select a real JPG, PNG, or WebP file from your device. Remove portrait switches the website to your white default avatar.</p><div className="admin-portrait__actions"><label className="upload-button"><UploadSimple /> {uploading ? "Uploading…" : "Choose and upload portrait"}<input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled={readOnly || uploading} onChange={(event) => upload(event.target.files?.[0])} /></label><button className="delete-button" type="button" onClick={remove} disabled={readOnly || value === DEFAULT_PORTRAIT}><Trash /> Remove portrait</button></div></div></div>;
 }
 
+// Manages project copy, technologies, links, ordering, and uploaded logos.
 function ProjectEditor({ items, onChange, onUploadComplete, setMessage, defaultUrl }) {
   const readOnly = useContext(AdminReadOnlyContext);
   const [editor, setEditor] = useState(null);
   const [uploading, setUploading] = useState("");
+  // New projects are prepared with a unique ID and the GitHub URL as a fallback.
   const openAdd = () => setEditor({ mode: "add", index: -1, value: { id: crypto.randomUUID(), title: "", shortDescription: "", description: "", tech: [], techInput: "", url: defaultUrl, logoUrl: "" } });
   const openEdit = (index) => setEditor({ mode: "edit", index, value: { ...structuredClone(items[index]), shortDescription: items[index].shortDescription || items[index].description || "", techInput: (items[index].tech || []).join(", ") } });
   function confirm() {
     const { techInput, ...project } = editor.value;
+    // Convert the friendly comma-separated text into the array used by public tags.
     project.tech = techInput.split(",").map((item) => item.trim()).filter(Boolean);
+    // A newly added project goes first so Home always shows the newest work first.
     const nextItems = editor.mode === "add" ? [project, ...items] : items.map((item, index) => index === editor.index ? project : item);
     onChange(nextItems);
     setMessage(`Projects ${editor.mode === "add" ? "added" : "updated"} successfully. Select Save changes to publish.`);
@@ -178,6 +197,7 @@ function ProjectEditor({ items, onChange, onUploadComplete, setMessage, defaultU
   </AdminCard>;
 }
 
+// Manages Award and Certificate details together with their PDF or image file.
 function DocumentEditor({ title, items, onChange, onUploadComplete, setMessage }) {
   const readOnly = useContext(AdminReadOnlyContext);
   const [editor, setEditor] = useState(null);
@@ -203,6 +223,7 @@ function DocumentEditor({ title, items, onChange, onUploadComplete, setMessage }
       const url = await uploadFile(file);
       const nextItems = items.map((item, itemIndex) => itemIndex === index ? { ...item, url } : item);
       onChange(nextItems);
+      // Publish immediately after upload so the Storage URL is saved in the database.
       await onUploadComplete(nextItems);
       setMessage(`${title} file uploaded and published successfully.`);
     } catch (error) { setMessage(error.message); } finally { setUploading(""); }
@@ -213,9 +234,11 @@ function DocumentEditor({ title, items, onChange, onUploadComplete, setMessage }
   </AdminCard>;
 }
 
+// Provides secure content management and a read-only demonstration mode.
 export function AdminPage() {
   const { content, setContent, refresh } = useContent();
   const navigate = useNavigate();
+  // Authentication state is separate from the editable content draft.
   const [session, setSession] = useState({ loading: true, authenticated: false });
   const [draft, setDraft] = useState(null);
   const [credentials, setCredentials] = useState({ email: "", password: "" });
@@ -228,6 +251,7 @@ export function AdminPage() {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Restore access only when Supabase has a session and this tab completed OTP.
   useEffect(() => {
     if (!supabase) { setSession({ loading: false, authenticated: false }); return undefined; }
     let active = true;
@@ -241,6 +265,7 @@ export function AdminPage() {
       }
       setSession({ loading: false, authenticated: Boolean(data.session && otpVerified) });
     });
+    // Keep the interface synchronized when Supabase signs in or signs out.
     const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!active) return;
       const otpVerified = sessionStorage.getItem(ADMIN_OTP_VERIFIED_KEY) === "true";
@@ -248,20 +273,25 @@ export function AdminPage() {
     });
     return () => { active = false; data.subscription.unsubscribe(); };
   }, []);
+  // Prevent repeated OTP emails by showing a 60-second resend countdown.
   useEffect(() => {
     if (resendAvailableIn <= 0) return undefined;
     const timer = window.setInterval(() => setResendAvailableIn((seconds) => Math.max(0, seconds - 1)), 1000);
     return () => window.clearInterval(timer);
   }, [resendAvailableIn]);
+  // Clone live content so edits remain local until Save changes is selected.
   useEffect(() => { if (content && !draft) setDraft(structuredClone(content)); }, [content, draft]);
+  // Remove old success messages automatically after six seconds.
   useEffect(() => { if (!message || !session.authenticated) return undefined; const timer = window.setTimeout(() => setMessage(""), 6000); return () => window.clearTimeout(timer); }, [message, session.authenticated]);
 
+  // Step 1 verifies the password, then emails a separate one-time code.
   async function login(event) {
     event.preventDefault(); setMessage(""); setAuthBusy(true);
     const email = credentials.email.trim();
     try {
       const { error: passwordError } = await supabase.auth.signInWithPassword({ email, password: credentials.password });
       if (passwordError) throw passwordError;
+      // End the password session so OTP remains a required second factor.
       await supabase.auth.signOut({ scope: "local" });
       const { error: otpError } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
       if (otpError) throw otpError;
@@ -276,6 +306,7 @@ export function AdminPage() {
       setMessage(error.message);
     } finally { setAuthBusy(false); }
   }
+  // Step 2 verifies the Gmail OTP and opens the real Admin workspace.
   async function verifyLoginOtp(event) {
     event.preventDefault(); setMessage("");
     if (!/^\d{6}$/.test(loginOtp)) { setMessage("Enter the complete 6-digit code."); return; }
@@ -294,6 +325,7 @@ export function AdminPage() {
     setMessage("Two-step verification completed successfully.");
     setAuthBusy(false);
   }
+  // Requests a replacement code after the cooldown finishes.
   async function resendLoginOtp() {
     if (resendAvailableIn > 0 || authBusy) return;
     setMessage(""); setAuthBusy(true);
@@ -302,6 +334,7 @@ export function AdminPage() {
     if (!error) setResendAvailableIn(60);
     setAuthBusy(false);
   }
+  // Clears both Supabase and local OTP state when the Admin logs out.
   async function logout() {
     sessionStorage.removeItem(ADMIN_OTP_VERIFIED_KEY);
     await supabase.auth.signOut();
@@ -309,14 +342,17 @@ export function AdminPage() {
     setDraft(null);
     setLoginStep("credentials");
   }
+  // Starts a clean recovery flow on the dedicated reset-password page.
   function openPasswordRecovery() {
     setMessage("");
     sessionStorage.removeItem(RECOVERY_EMAIL_KEY);
     sessionStorage.removeItem("tang-admin-recovery-verified");
     navigate("/reset-password", { state: { email: credentials.email.trim() } });
   }
+  // Guest mode shows the CMS structure without granting write access.
   function openGuestPreview() { setGuestMode(true); setMessage(""); }
   function closeGuestPreview() { setGuestMode(false); setMessage(""); }
+  // Capture clicks before disabled guest controls can change local content.
   function blockGuestInteraction(event) {
     if (!guestMode || event.target.closest(".admin-collapse-button, [data-guest-allowed='true']")) return;
     if (event.target.closest("button, a, input, textarea, .admin-toggle, .upload-button")) {
@@ -325,7 +361,9 @@ export function AdminPage() {
       setMessage("Guest Preview is read-only. Sign in as Admin to use this control.");
     }
   }
+  // Normalizes and writes the complete content document to Supabase row ID 1.
   async function persistContent(nextDraft, successMessage = "Changes saved successfully.") {
+    // Keep dated content newest-first and clean social URLs before publishing.
     const normalizedDraft = {
       ...nextDraft,
       experience: sortRecent(nextDraft.experience, "period"),
@@ -333,12 +371,16 @@ export function AdminPage() {
       awards: sortRecent(nextDraft.awards, "date"),
       contact: { ...nextDraft.contact, github: normalizeExternalUrl(nextDraft.contact.github), linkedin: normalizeExternalUrl(nextDraft.contact.linkedin), facebook: normalizeExternalUrl(nextDraft.contact.facebook) },
     };
+    // Upsert creates row 1 when missing or replaces its content when it exists.
     const { data, error } = await supabase.from("portfolio_content").upsert({ id: 1, content: normalizedDraft, updated_at: new Date().toISOString() }, { onConflict: "id" }).select("content").single();
     if (error) throw error;
     setDraft(structuredClone(data.content)); setContent(data.content); await refresh(); setMessage(successMessage); return data.content;
   }
+  // Publishes all unsaved draft changes from the main Save changes button.
   async function save(event) { event.preventDefault(); setSaving(true); setMessage(""); try { await persistContent(draft); } catch (error) { setMessage(error.message); } finally { setSaving(false); } }
+  // Updates one nested object field without mutating the previous React state.
   function updateSection(section, key, value) { setDraft((current) => ({ ...current, [section]: { ...current[section], [key]: value } })); }
+  // Creates small setter helpers for list-based editor components.
   const setArray = (section) => (items) => setDraft((current) => ({ ...current, [section]: items }));
   const setRecentArray = (section, dateKey) => (items) => setDraft((current) => ({ ...current, [section]: sortRecent(items, dateKey) }));
 
@@ -373,11 +415,13 @@ export function AdminPage() {
   </div></main>;
   if (!draft) return null;
 
+  // Choose the toast color from the result message.
   const successMessage = message.toLowerCase().includes("successfully") || message.toLowerCase().includes("sent");
   return <AdminReadOnlyContext.Provider value={guestMode}><main className={`admin-page ${guestMode ? "admin-page--guest" : ""}`} onClickCapture={blockGuestInteraction} onSubmitCapture={blockGuestInteraction}>
     <header className="admin-header"><div><span className="eyebrow">{guestMode ? "Read-only demonstration" : "Private workspace"}</span><h1>{guestMode ? "Admin Guest Preview" : "Portfolio Content"}</h1></div><div><button className="button button--primary" type="submit" form="admin-content-form" disabled={saving || guestMode} aria-disabled={guestMode}><FloppyDisk /> {saving ? "Saving…" : "Save changes"}</button><Link className="button button--ghost" data-guest-allowed="true" to="/"><ArrowLeft /> View site</Link>{guestMode ? <button className="button button--ghost guest-exit" data-guest-allowed="true" type="button" onClick={closeGuestPreview}><ArrowLeft /> Exit preview</button> : <button className="button button--ghost" type="button" onClick={logout}><SignOut /> Log out</button>}</div></header>
     {guestMode && <aside className="admin-guest-banner"><LockKey size={24} weight="fill" /><div><strong>Guest Preview — view only</strong><p>This is a live demonstration of the portfolio CMS. Controls marked with × are locked; only an authenticated Admin can change Supabase content or files.</p></div></aside>}
     {message && <div className={`admin-toast ${successMessage ? "" : "admin-toast--error"}`} role="status"><span>{message}</span><button type="button" data-guest-allowed="true" onClick={() => setMessage("")} aria-label="Dismiss message"><X /></button></div>}
+    {/* Every editor below updates the shared draft submitted by this form. */}
     <form id="admin-content-form" className="admin-form" onSubmit={save}>
       <section className="admin-card"><h2>Profile</h2><PortraitEditor value={draft.profile.portraitUrl} setMessage={setMessage} onChange={(value) => updateSection("profile", "portraitUrl", value)} onUploadComplete={(value) => persistContent({ ...draft, profile: { ...draft.profile, portraitUrl: value } }, "Portrait uploaded and published successfully.")} /><div className="admin-grid"><Field label="Name" value={draft.profile.name} onChange={(value) => updateSection("profile", "name", value)} /><Field label="Role" value={draft.profile.role} onChange={(value) => updateSection("profile", "role", value)} /><Field label="Hero eyebrow" value={draft.profile.eyebrow} onChange={(value) => updateSection("profile", "eyebrow", value)} /><Field label="Availability" value={draft.profile.availability} onChange={(value) => updateSection("profile", "availability", value)} /><Field label="Intro" multiline value={draft.profile.intro} onChange={(value) => updateSection("profile", "intro", value)} /><Field label="Availability detail" multiline value={draft.profile.availabilityDetail} onChange={(value) => updateSection("profile", "availabilityDetail", value)} /></div></section>
       <section className="admin-card"><h2>About heading</h2><Field label="Heading" value={draft.about.heading} onChange={(value) => updateSection("about", "heading", value)} /></section>

@@ -5,18 +5,22 @@ import { ContactButtons, Layout, LoadingScreen, PageIntro, reveal } from "./comp
 import { useContent } from "./content-context";
 import { sortRecent } from "./content-utils";
 
+// Default icons rotate between projects that do not have an uploaded logo.
 const projectIcons = [ChatCircleDots, ShieldCheck, Barbell];
 
+// Uses an uploaded project logo or selects a safe default icon.
 function ProjectMark({ project, index }) {
   if (project.logoUrl) return <span className="project-row__icon project-row__icon--image"><img src={project.logoUrl} alt={`${project.title} logo`} /></span>;
   const Icon = projectIcons[index % projectIcons.length];
   return <span className="project-row__icon"><Icon size={28} weight="duotone" /></span>;
 }
 
+// Reuses the project cards on Home and the detailed Projects page.
 function ProjectList({ projects, detailed = false }) {
   return <div className={`project-list ${detailed ? "project-list--detailed" : ""}`}>{projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span className="project-row__copy"><strong>{project.title}</strong><small>{detailed ? project.description : project.shortDescription || project.description}</small>{detailed && project.tech?.length > 0 && <span className="project-row__tech" aria-label="Technologies">{project.tech.map((technology) => <span key={technology}>{technology}</span>)}</span>}</span><ArrowRight size={22} /></a>)}</div>;
 }
 
+// Displays Awards and Certificates as links to their uploaded documents.
 function CredentialCards({ items }) {
   return <div className="credential-grid">{items.map((item) => <a className="credential-card" href={item.url} target="_blank" rel="noreferrer" key={item.id}>
     <span className="credential-card__icon"><Certificate size={25} weight="duotone" /></span>
@@ -25,10 +29,12 @@ function CredentialCards({ items }) {
   </a>)}</div>;
 }
 
+// Builds the landing page from the latest shared Admin content.
 export function HomePage() {
   const { content, error } = useContent();
   if (!content) return <LoadingScreen />;
   const { profile, about, projects, semesterResults, contact } = content;
+  // Sort and filter editable content before it is shown publicly.
   const recentExperience = sortRecent(content.experience, "period").filter((item) => item.visible !== false);
   const recentAwards = sortRecent(content.awards, "date");
   const currentEmployment = content.currentEmployment;
@@ -36,6 +42,7 @@ export function HomePage() {
   const visibleSemesterResults = semesterResults.filter((item) => item.visible !== false);
   return (
     <Layout compactBackground={false}>
+      {/* Main introduction and portrait. */}
       <section className="hero">
         <div className="hero__copy">
           <motion.span className="eyebrow" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .15 }}>Hello, I’m</motion.span>
@@ -54,6 +61,7 @@ export function HomePage() {
 
       {error && <p className="notice">{error}</p>}
 
+      {/* Short About and Projects previews link visitors to the full pages. */}
       <section className="home-grid section-wrap">
         <motion.div className="about-preview" {...reveal}>
           <span className="eyebrow">About me</span><h2>{about.heading}</h2>
@@ -67,12 +75,14 @@ export function HomePage() {
         </motion.div>
       </section>
 
+      {/* Optional academic results can be hidden from Admin without deletion. */}
       {sectionVisibility.semesterResults && visibleSemesterResults.length > 0 && <motion.section className="results section-wrap" {...reveal}>
         <span className="eyebrow">Semester results</span><h2>Academic Progress</h2>
         <div className="results-grid">{visibleSemesterResults.map((result, index) => <article key={`${result.semester}-${index}`}><Trophy size={22} weight="duotone" /><small>Semester {result.semester}</small><strong>{result.gpa}</strong><span>GPA</span></article>)}</div>
         <p>Consistent progress. Continuous growth.</p>
       </motion.section>}
 
+      {/* Current employment appears above previous roles when it is enabled. */}
       {sectionVisibility.experience && (currentEmployment.visible || recentExperience.length > 0) && <motion.section className="home-experience section-wrap" {...reveal}>
         <h2>Experience</h2>
         {currentEmployment.visible && <div className="current-employment"><span className="eyebrow">Where I work now</span><small>{currentEmployment.period}</small><h3>{currentEmployment.company}</h3><strong>{currentEmployment.role}</strong><p>{currentEmployment.description}</p></div>}
@@ -81,6 +91,7 @@ export function HomePage() {
         <Link className="text-link experience-more" to="/resume">View full resume <ArrowRight /></Link>
       </motion.section>}
 
+      {/* Achievement cards open the original award or certificate files. */}
       <motion.section className="home-credentials section-wrap" {...reveal}>
         <span className="eyebrow">Achievements</span><h2>Awards & Certificates</h2>
         <div className="home-credentials__columns"><div><h3>Awards</h3><CredentialCards items={recentAwards} /></div><div><h3>Certificates</h3><CredentialCards items={content.certifications} /></div></div>
@@ -99,6 +110,7 @@ export function HomePage() {
   );
 }
 
+// Shows every project with its detailed description and technology tags.
 export function ProjectsPage() {
   const { content } = useContent();
   if (!content) return <LoadingScreen />;
@@ -109,6 +121,7 @@ export function ProjectsPage() {
   </Layout>;
 }
 
+// Shows the full biography, portrait, and shared skills list.
 export function AboutPage() {
   const { content } = useContent();
   if (!content) return <LoadingScreen />;
@@ -120,9 +133,11 @@ export function AboutPage() {
   </Layout>;
 }
 
+// Builds a web resume while respecting every Admin visibility setting.
 export function ResumePage() {
   const { content } = useContent();
   if (!content) return <LoadingScreen />;
+  // Prepare newest-first and visible-only lists for the resume timeline.
   const recentExperience = sortRecent(content.experience, "period").filter((item) => item.visible !== false);
   const recentActivities = sortRecent(content.extraCurricularActivities, "period").filter((item) => item.visible !== false);
   const recentAwards = sortRecent(content.awards, "date");
@@ -143,6 +158,7 @@ export function ResumePage() {
   </Layout>;
 }
 
+// Provides the email address and all configured social contact methods.
 export function ContactPage() {
   const { content } = useContent();
   if (!content) return <LoadingScreen />;

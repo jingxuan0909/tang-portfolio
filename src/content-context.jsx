@@ -4,14 +4,17 @@ import { supabase } from "./supabase";
 
 const ContentContext = createContext(null);
 
+// Adds a visible flag to older records that were created before hiding was supported.
 function withItemVisibility(items = []) {
   return items.map((item) => ({ ...item, visible: item.visible !== false }));
 }
 
+// Keeps the latest local project copy available for migrating older database records.
 const canonicalProjectsByTitle = new Map(
   initialContent.projects.map((project) => [project.title.toLowerCase(), project]),
 );
 
+// Upgrades one saved project while preserving its database ID and uploaded logo.
 function mergeProject(project) {
   const canonicalProject = canonicalProjectsByTitle.get(project.title?.toLowerCase());
 
@@ -33,6 +36,7 @@ function mergeProject(project) {
   };
 }
 
+// Combines Supabase content with safe local defaults for any missing fields.
 function mergeWithDefaults(savedContent) {
   if (!savedContent) return initialContent;
   return {
@@ -51,9 +55,11 @@ function mergeWithDefaults(savedContent) {
 }
 
 export function ContentProvider({ children }) {
+  // Content starts empty so pages can show a loading screen during the first request.
   const [content, setContent] = useState(null);
   const [error, setError] = useState("");
 
+  // Reloads the single portfolio_content row from Supabase.
   async function refresh() {
     try {
       if (!supabase) {
@@ -61,6 +67,7 @@ export function ContentProvider({ children }) {
         setError("Supabase is not configured yet.");
         return;
       }
+      // The portfolio uses row ID 1 as its single editable content document.
       const { data, error: requestError } = await supabase
         .from("portfolio_content")
         .select("content")
@@ -70,19 +77,23 @@ export function ContentProvider({ children }) {
       setContent(mergeWithDefaults(data?.content));
       setError("");
     } catch (requestError) {
+      // Keep the public website usable if Supabase is temporarily unavailable.
       setContent(initialContent);
       setError("");
     }
   }
 
+  // Fetch content once when the provider is first mounted.
   useEffect(() => {
     refresh();
   }, []);
 
+  // Reuse the same context object until its content or error changes.
   const value = useMemo(() => ({ content, setContent, refresh, error }), [content, error]);
   return <ContentContext.Provider value={value}>{children}</ContentContext.Provider>;
 }
 
+// Gives any child component access to the shared portfolio content.
 export function useContent() {
   const value = useContext(ContentContext);
   if (!value) throw new Error("useContent must be used inside ContentProvider");

@@ -1,3 +1,4 @@
+// This legacy OpenAI Sites worker serves the app and its earlier content API.
 const encoder = new TextEncoder();
 const SESSION_TTL_SECONDS = 8 * 60 * 60;
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024;
@@ -8,6 +9,7 @@ const UPLOAD_EXTENSIONS = {
   "image/webp": ".webp",
 };
 
+// Creates a no-cache JSON response with a chosen HTTP status.
 function json(payload, status = 200, headers = {}) {
   return new Response(JSON.stringify(payload), {
     status,
@@ -15,21 +17,25 @@ function json(payload, status = 200, headers = {}) {
   });
 }
 
+// Converts binary security values into cookie-safe text.
 function bytesToBase64Url(bytes) {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+// Decodes the text portion stored inside a signed session cookie.
 function base64UrlToText(value) {
   const padded = value.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((value.length + 3) % 4);
   return atob(padded);
 }
 
+// Hashes login values before performing a constant-time comparison.
 async function digest(value) {
   return new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
 }
 
+// Compares equal-length byte arrays without exiting at the first mismatch.
 function safeEqual(left, right) {
   if (left.length !== right.length) return false;
   let mismatch = 0;
@@ -37,17 +43,20 @@ function safeEqual(left, right) {
   return mismatch === 0;
 }
 
+// Signs session data with HMAC so clients cannot modify it.
 async function sign(value, secret) {
   const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   return bytesToBase64Url(new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(value))));
 }
 
+// Finds and decodes one cookie from an incoming request.
 function readCookie(request, name) {
   const cookie = request.headers.get("cookie") || "";
   const match = cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${name}=`));
   return match ? decodeURIComponent(match.slice(name.length + 1)) : "";
 }
 
+// Verifies the session signature and rejects expired sessions.
 async function readSession(request, env) {
   const token = readCookie(request, "portfolio_session");
   if (!token || !env.ADMIN_SESSION_SECRET) return null;
@@ -63,6 +72,7 @@ async function readSession(request, env) {
   }
 }
 
+// Creates the one-row content table the first time the worker runs.
 async function ensureContentTable(db) {
   await db.prepare(`CREATE TABLE IF NOT EXISTS portfolio_content (
     id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -71,6 +81,7 @@ async function ensureContentTable(db) {
   )`).run();
 }
 
+// Loads saved content or seeds the database from content.json.
 async function getContent(request, env) {
   await ensureContentTable(env.DB);
   const saved = await env.DB.prepare("SELECT content_json FROM portfolio_content WHERE id = 1").first();
@@ -83,6 +94,7 @@ async function getContent(request, env) {
   return content;
 }
 
+// Rejects malformed or unexpectedly large portfolio documents.
 function validateContent(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid content");
   if (!Array.isArray(value.projects) || value.projects.length > 50) throw new Error("Invalid projects");
@@ -94,6 +106,7 @@ function validateContent(value) {
   return value;
 }
 
+// Routes legacy authentication, content, and upload API requests.
 async function handleApi(request, env, url) {
   if (request.method === "GET" && url.pathname === "/api/content") {
     return json(await getContent(request, env));
@@ -154,6 +167,7 @@ async function handleApi(request, env, url) {
   return json({ error: "Not found." }, 404);
 }
 
+// Returns an uploaded R2 object when it is not a bundled static asset.
 async function handleUpload(request, env, url) {
   const staticResponse = await env.ASSETS.fetch(request);
   if (staticResponse.status !== 404) return staticResponse;
@@ -168,12 +182,14 @@ async function handleUpload(request, env, url) {
 }
 
 export default {
+  // Cloudflare calls fetch for every request received by this worker.
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
       if (url.pathname.startsWith("/api/")) return await handleApi(request, env, url);
       if (request.method === "GET" && url.pathname.startsWith("/uploads/")) return await handleUpload(request, env, url);
 
+      // Serve static files first, then return index.html for React routes.
       const response = await env.ASSETS.fetch(request);
       const acceptsHtml = request.headers.get("accept")?.includes("text/html");
       if (response.status !== 404 || !acceptsHtml || !["GET", "HEAD"].includes(request.method)) return response;
