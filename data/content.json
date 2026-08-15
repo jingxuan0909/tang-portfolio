@@ -46,41 +46,147 @@
     {
       "id": "innolink",
       "title": "innoLink Chatbot",
-      "shortDescription": "A Python chatbot designed to answer questions, retrieve useful information, and provide intelligent assistance.",
-      "description": "A Python chatbot designed to answer questions, retrieve useful information, and provide intelligent assistance.",
-      "logoUrl": "",
+      "shortDescription": "A PySide6 investor-messaging prototype with animated chat, multimedia feedback, and in-app video calling.",
+      "description": "A high-fidelity desktop messaging prototype for InnoLink, a platform that connects Southeast Asian startup founders with angel investors. Built with Python and PySide6, it recreates a one-to-one investor chat with animated message bubbles, typing and online indicators, automatic replies, an intro video, a looping video-call screen, and low-latency sound feedback for sending, receiving, typing, and ringing.",
+      "logoUrl": "/assets/project-logos/chatbot-logo.png",
       "tech": [
         "Python",
-        "NLP",
-        "Chatbot"
+        "PySide6",
+        "Qt 6",
+        "QtMultimedia",
+        "QtSvg",
+        "QPainter",
+        "NumPy",
+        "Pillow",
+        "imageio-ffmpeg"
       ],
-      "url": "https://github.com/jingxuan0909"
+      "url": "https://github.com/jingxuan0909/innoLink-chatbot"
     },
     {
       "id": "mysafety",
       "title": "MySafety",
-      "shortDescription": "A Java-based safety system designed to improve awareness and provide quick access to emergency resources.",
-      "description": "A Java-based safety system designed to improve awareness and provide quick access to emergency resources.",
-      "logoUrl": "",
+      "shortDescription": "A Java Swing public-safety system combining alerts, disaster guidance, air-quality monitoring, and community discussion.",
+      "description": "MySafety is a role-based Java Swing desktop application for public-safety awareness and community communication. Users can register and sign in, browse searchable announcements, monitor Kuala Lumpur Air Pollutant Index updates, follow earthquake, flood, and tsunami guidance, read environmental-awareness content, and participate in a forum with image uploads. Admin tools manage announcements and educational content, while application data is stored locally in text files.",
+      "logoUrl": "/assets/project-logos/mysafety-logo.png",
       "tech": [
-        "Java",
-        "Application",
-        "Safety"
+        "Java 18",
+        "Java Swing",
+        "Maven",
+        "CardLayout",
+        "Local File Persistence"
       ],
-      "url": "https://github.com/jingxuan0909"
+      "url": "https://github.com/jingxuan0909/MySafety-Java"
     },
     {
       "id": "fitness-app",
       "title": "Fitness Application",
-      "shortDescription": "A JavaFX fitness application that helps users plan workouts, monitor progress, and stay consistent.",
-      "description": "A JavaFX fitness application that helps users plan workouts, monitor progress, and stay consistent.",
-      "logoUrl": "",
+      "shortDescription": "A JavaFX fitness and nutrition tracker with secure accounts, goals, charts, BMI, and achievement tracking.",
+      "description": "A JavaFX and FXML desktop health tracker that gives each user a private fitness workspace. It supports registration and PBKDF2-secured login, profile and BMI management, dated nutrition and workout records, automatic calorie and distance calculations, personal goals, progress bars, charts, and achievement unlocking. Data is isolated per user in local files, and automated tests cover authentication, calculations, interface loading, persistence, and malformed-record recovery.",
+      "logoUrl": "/assets/project-logos/fitness-logo.png",
       "tech": [
-        "Java",
+        "Java 22",
         "JavaFX",
-        "Fitness"
+        "FXML",
+        "Maven",
+        "PBKDF2",
+        "JUnit",
+        "CSS",
+        "Local File Persistence"
       ],
-      "url": "https://github.com/jingxuan0909"
+      "url": "https://github.com/jingxuan0909/FitnessApp-JavaFX"
+    },
+    {
+      "id": "tang-portfolio",
+      "title": "tang-portfolio",
+      "shortDescription": "A responsive React portfolio with a Supabase-powered Admin CMS for managing content, projects, and credentials.",
+      "description": "A responsive multi-page portfolio built with React 19 and Vite to present academic progress, skills, experience, projects, awards, and certificates. Its authenticated Admin workspace stores editable content in Supabase PostgreSQL, uploads portraits, project logos, and documents to Supabase Storage, and protects write access with Supabase Auth and Row Level Security. React Router, Motion animations, responsive CSS, GitHub, and automatic Vercel deployments complete the production workflow.",
+      "logoUrl": "/assets/project-logos/tang-portfolio-logo.png",
+      "tech": [
+        "React 19",
+        "JavaScript",
+        "Vite",
+        "React Router",
+        "Motion for React",
+        "CSS",
+        "Supabase",
+        "PostgreSQL",
+        "Supabase Auth",
+        "Supabase Storage",
+        "Row Level Security",
+        "Git",
+        "GitHub",
+        "Vercel"
+      ],
+      "url": "https://github.com/jingxuan0909/tang-portfolio"
+    },
+    {
+      "id": "enhance-e-hailing",
+      "title": "Enhance E-Hailing App - Software Security System",
+      "shortDescription": "A security-first e-hailing prototype covering KYC, passkeys, face recognition, and protected ride booking.",
+      "description": "A Figma Make mobile prototype that redesigns an e-hailing journey around identity verification and account security. The flow moves from Gmail sign-in through KYC data and document collection, mandatory biometric and passkey setup with fingerprint and PIN confirmation, vehicle and destination selection, face recognition, and final booking. Interactive validation, animated verification feedback, route previews, estimated travel times, and end-to-end data flow keep the dark lime-accented experience clear and consistent.",
+      "logoUrl": "/assets/project-logos/enhance-e-hailing-logo.png",
+      "tech": [
+        "Figma Make",
+        "UI/UX Design",
+        "Interactive Prototyping",
+        "Mobile App Design",
+        "Security UX",
+        "KYC Flow",
+        "Biometric Authentication",
+        "Passkey UX"
+      ],
+      "url": "https://www.figma.com/make/458QqYStCB4bYyauW0ScUY/Enhance-E-Hailing-App-Flow"
+    },
+    {
+      "id": "enhance-mysejahtera",
+      "title": "Enhance MySejahtera App UI - Software Security System",
+      "shortDescription": "A secure MySejahtera UI prototype with timed OTP login, mandatory biometrics, and protected account settings.",
+      "description": "A Figma Make redesign of MySejahtera focused on secure authentication and clearer healthcare navigation. It introduces phone-and-password login with a six-digit OTP and two-minute expiry, mandatory fingerprint registration, single-device security notifications, health-service shortcuts, profile and QR verification, and a complete Settings area. The password-change flow adds OTP verification, field validation, password requirements, and success feedback.",
+      "logoUrl": "/assets/project-logos/enhance-mysejahtera-logo.png",
+      "tech": [
+        "Figma Make",
+        "UI/UX Design",
+        "Interactive Prototyping",
+        "Mobile App Design",
+        "OTP Authentication UX",
+        "Biometric UX",
+        "Security and Privacy Design"
+      ],
+      "url": "https://www.figma.com/make/pkoxbMRNYakutRokGRrAyQ/Enhance-MySejahtera-App-UI"
+    },
+    {
+      "id": "innolink-mobile-ui",
+      "title": "InnoLink (Mobile App UI)",
+      "shortDescription": "An interactive founder-and-investor networking prototype for funding, workshops, messaging, and business discovery.",
+      "description": "An extensive Figma Make mobile prototype for InnoLink, a startup-networking platform that connects founders and investors. The product combines onboarding and account recovery with user and business profiles, privacy controls, investor communication, funding opportunities, workshop registration, AI-assisted recommendations, and structured feedback. Interactive apply, register, and cancel states together with field-level validation make the major flows realistic and testable.",
+      "logoUrl": "/assets/project-logos/innolink-mobile-ui-logo.png",
+      "tech": [
+        "Figma Make",
+        "UI/UX Design",
+        "Interactive Prototyping",
+        "Mobile App Design",
+        "User Flow",
+        "Form Validation",
+        "Security UX",
+        "AI Recommendation UX"
+      ],
+      "url": "https://www.figma.com/make/7eBI2DdqA28sAPLtO65474/InnoLink-Prototype"
+    },
+    {
+      "id": "hotelcatz",
+      "title": "HotelCatz",
+      "shortDescription": "A responsive Wix website for cat grooming, mating, hotel, spa, and online boarding reservations.",
+      "description": "HotelCatz is a responsive Wix website that presents a complete pet-care and cat-boarding service. Visitors can explore grooming, mating, hotel, and spa offerings; browse the gallery and blog; review contact details and opening hours; and use the booking journey to arrange a stay. The design combines service-focused content with clear calls to action for cat owners.",
+      "logoUrl": "/assets/project-logos/hotelcatz-logo.png",
+      "tech": [
+        "Wix",
+        "Wix Bookings",
+        "Wix Blog",
+        "Responsive Web Design",
+        "UI/UX Design",
+        "Online Booking"
+      ],
+      "url": "https://pose17.wixsite.com/hotelcatz"
     }
   ],
   "semesterResults": [

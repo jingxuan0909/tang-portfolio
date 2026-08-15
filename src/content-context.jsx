@@ -8,6 +8,31 @@ function withItemVisibility(items = []) {
   return items.map((item) => ({ ...item, visible: item.visible !== false }));
 }
 
+const canonicalProjectsByTitle = new Map(
+  initialContent.projects.map((project) => [project.title.toLowerCase(), project]),
+);
+
+function mergeProject(project) {
+  const canonicalProject = canonicalProjectsByTitle.get(project.title?.toLowerCase());
+
+  // Existing Supabase projects predate separate Home and Projects-page copy.
+  // Migrate those records once, while preserving uploaded logos and database IDs.
+  if (canonicalProject && !project.shortDescription) {
+    return {
+      ...project,
+      shortDescription: canonicalProject.shortDescription,
+      description: canonicalProject.description,
+      tech: canonicalProject.tech,
+      url: canonicalProject.url,
+    };
+  }
+
+  return {
+    ...project,
+    shortDescription: project.shortDescription || project.description || "",
+  };
+}
+
 function mergeWithDefaults(savedContent) {
   if (!savedContent) return initialContent;
   return {
@@ -19,10 +44,7 @@ function mergeWithDefaults(savedContent) {
     sectionVisibility: { ...initialContent.sectionVisibility, ...savedContent.sectionVisibility },
     contact: { ...initialContent.contact, ...savedContent.contact },
     semesterResults: withItemVisibility(savedContent.semesterResults || initialContent.semesterResults),
-    projects: (savedContent.projects || initialContent.projects).map((project) => ({
-      ...project,
-      shortDescription: project.shortDescription || project.description || "",
-    })),
+    projects: (savedContent.projects || initialContent.projects).map(mergeProject),
     experience: withItemVisibility(savedContent.experience || initialContent.experience),
     extraCurricularActivities: withItemVisibility(savedContent.extraCurricularActivities || initialContent.extraCurricularActivities),
   };
