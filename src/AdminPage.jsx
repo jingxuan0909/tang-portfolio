@@ -92,7 +92,7 @@ const projectFields = [
   { key: "url", label: "Project URL" },
   { key: "shortDescription", label: "Short description (Home page)", multiline: true },
   { key: "description", label: "Detailed description (Projects page)", multiline: true },
-  { key: "tech", label: "Technologies (comma separated)", format: (value = []) => value.join(", "), parse: (value) => value.split(",").map((item) => item.trim()).filter(Boolean), display: (value = []) => value.join(", ") },
+  { key: "techInput", label: "Technologies (comma separated)" },
 ];
 const semesterFields = [{ key: "semester", label: "Semester" }, { key: "gpa", label: "GPA" }];
 const educationFields = [{ key: "institution", label: "Institution" }, { key: "qualification", label: "Qualification" }, { key: "period", label: "Period" }];
@@ -142,10 +142,12 @@ function ProjectEditor({ items, onChange, onUploadComplete, setMessage, defaultU
   const readOnly = useContext(AdminReadOnlyContext);
   const [editor, setEditor] = useState(null);
   const [uploading, setUploading] = useState("");
-  const openAdd = () => setEditor({ mode: "add", index: -1, value: { id: crypto.randomUUID(), title: "", shortDescription: "", description: "", tech: [], url: defaultUrl, logoUrl: "" } });
-  const openEdit = (index) => setEditor({ mode: "edit", index, value: { ...structuredClone(items[index]), shortDescription: items[index].shortDescription || items[index].description || "" } });
+  const openAdd = () => setEditor({ mode: "add", index: -1, value: { id: crypto.randomUUID(), title: "", shortDescription: "", description: "", tech: [], techInput: "", url: defaultUrl, logoUrl: "" } });
+  const openEdit = (index) => setEditor({ mode: "edit", index, value: { ...structuredClone(items[index]), shortDescription: items[index].shortDescription || items[index].description || "", techInput: (items[index].tech || []).join(", ") } });
   function confirm() {
-    const nextItems = editor.mode === "add" ? [editor.value, ...items] : items.map((item, index) => index === editor.index ? editor.value : item);
+    const { techInput, ...project } = editor.value;
+    project.tech = techInput.split(",").map((item) => item.trim()).filter(Boolean);
+    const nextItems = editor.mode === "add" ? [project, ...items] : items.map((item, index) => index === editor.index ? project : item);
     onChange(nextItems);
     setMessage(`Projects ${editor.mode === "add" ? "added" : "updated"} successfully. Select Save changes to publish.`);
     setEditor(null);
