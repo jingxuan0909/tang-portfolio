@@ -1,3 +1,4 @@
+// Runs React component tests in a browser-like jsdom environment.
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 

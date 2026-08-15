@@ -1,3 +1,4 @@
+// Provides secure Admin authentication, OTP verification, content editing, uploads, and Guest Preview.
 import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowSquareOut, CaretDown, Eye, EyeSlash, FloppyDisk, LockKey, PencilSimple, Plus, SignOut, Trash, UploadSimple, UserFocus, X } from "@phosphor-icons/react";

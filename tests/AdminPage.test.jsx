@@ -1,9 +1,11 @@
+// Tests Admin login, OTP, Guest restrictions, editing, deletion, uploads, visibility, and dialogs.
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import initialContent from "../data/content.json";
 
+// Hoisted mocks replace Supabase so tests never modify real portfolio data or files.
 const mocks = vi.hoisted(() => ({
   context: { content: null, setContent: vi.fn(), refresh: vi.fn() },
   auth: {

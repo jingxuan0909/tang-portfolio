@@ -1,3 +1,4 @@
+// Implements the public Home, About, Projects, Resume, and Contact pages.
 import { motion } from "motion/react";
 import { ArrowRight, ArrowSquareOut, Barbell, Briefcase, ChatCircleDots, GithubLogo, ShieldCheck, Trophy, GraduationCap, Certificate, Sparkle, UsersThree } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";

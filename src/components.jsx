@@ -1,3 +1,4 @@
+// Contains reusable navigation, footer, layout, contact, motion, and project presentation components.
 import { motion, useScroll, useTransform } from "motion/react";
 import { EnvelopeSimple, FacebookLogo, GithubLogo, LinkedinLogo, WhatsappLogo, ArrowUpRight, List, X } from "@phosphor-icons/react";
 import { useState } from "react";

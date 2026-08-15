@@ -1,8 +1,10 @@
+// Tests the password-recovery OTP flow without sending a real email.
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+// Fake Auth methods provide predictable success and error responses.
 const auth = vi.hoisted(() => ({
   getSession: vi.fn(),
   resetPasswordForEmail: vi.fn(),

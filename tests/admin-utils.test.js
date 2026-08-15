@@ -1,3 +1,4 @@
+// Verifies safe Storage paths, content comparison, technology parsing, and date sorting.
 import { describe, expect, it } from "vitest";
 import { collectReferencedStorageUrls, hasContentChanged, parseTechnologies, storagePathFromPublicUrl } from "../src/admin-utils";
 import { sortRecent } from "../src/content-utils";

@@ -1,3 +1,4 @@
+// Starts React and mounts the complete portfolio application into index.html.
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App.jsx";

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Packages the Vite client and Worker entry points for optional OpenAI Sites hosting.
 import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

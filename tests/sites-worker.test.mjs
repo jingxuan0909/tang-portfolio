@@ -1,3 +1,4 @@
+// Verifies static assets, SPA route fallback, API behavior, and Sites build output.
 import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
 import test from "node:test";

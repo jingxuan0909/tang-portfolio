@@ -1,3 +1,4 @@
+// Loads portfolio content from Supabase and provides a safe local fallback to every page.
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import initialContent from "../data/content.json";
 import { supabase } from "./supabase";

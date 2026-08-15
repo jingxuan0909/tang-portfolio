@@ -1,3 +1,4 @@
+// Handles the three-step email OTP verification and password recovery flow.
 import { useEffect, useState } from "react";
 import { ArrowLeft, CheckCircle, EnvelopeSimple, ShieldCheck } from "@phosphor-icons/react";
 import { Link, useLocation } from "react-router-dom";
