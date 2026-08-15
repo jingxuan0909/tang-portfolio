@@ -37,7 +37,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .aurora-bg__veil { position: absolute; inset: 0; background: rgba(2, 11, 35, .16); }
 .aurora-bg--compact { height: 760px; opacity: .72; }
 
-.site-header { width: min(1180px, calc(100% - 48px)); height: 88px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.site-header { width: min(1180px, calc(100% - 48px)); height: 88px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); z-index: 30; }
 .brand { width: 42px; height: 42px; display: grid; place-items: center; font-weight: 700; letter-spacing: .08em; color: var(--coral); }
 .brand span { font-size: 15px; }
 .nav { display: flex; align-items: center; gap: 38px; }
@@ -79,6 +79,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .project-row__icon--image img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .project-row strong { display: block; font: 600 22px/1.2 var(--serif); }
 .project-row small { display: -webkit-box; margin-top: 6px; color: var(--muted); line-height: 1.45; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.project-list--detailed .project-row { align-items: start; padding-block: 20px; }
+.project-list--detailed .project-row small { display: block; margin-top: 8px; font-size: 14px; line-height: 1.62; overflow: visible; }
+.project-row__tech { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+.project-row__tech > span { padding: 6px 9px; border: 1px solid rgba(255, 128, 111, .28); border-radius: 999px; background: rgba(255, 128, 111, .08); color: #ffd1ca; font-size: 10px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
 .text-link { display: inline-flex; gap: 10px; align-items: center; margin-top: 20px; color: var(--coral); text-transform: uppercase; letter-spacing: .12em; font-size: 12px; }
 .projects-page-hero { width: min(920px, calc(100% - 48px)); margin-inline: auto; padding: 86px 0 34px; display: flex; justify-content: space-between; gap: 42px; align-items: end; }
 .projects-page-hero > div { max-width: 650px; }
@@ -305,8 +309,9 @@ button:disabled, .upload-button:has(input:disabled) { opacity: .5; cursor: not-a
 @media (max-width: 900px) {
   .site-header { width: min(100% - 32px, 1180px); height: 72px; }
   .menu-button { display: grid; place-items: center; }
-  .nav { position: absolute; top: 72px; left: -16px; right: -16px; display: none; flex-direction: column; align-items: stretch; gap: 0; padding: 14px 24px 22px; background: rgba(3, 11, 32, .98); border-bottom: 1px solid var(--line); }
+  .nav { position: absolute; z-index: 40; top: 71px; left: -16px; right: -16px; display: none; flex-direction: column; align-items: stretch; gap: 0; padding: 14px 24px 22px; background: #030b20; border-bottom: 1px solid var(--line-strong); box-shadow: 0 28px 60px rgba(0, 0, 0, .48); }
   .nav--open { display: flex; }
+  .menu-button { position: relative; z-index: 41; }
   .nav a { padding: 16px 4px; }
   .nav a::after { bottom: 10px; }
   .hero { grid-template-columns: 1fr; gap: 45px; padding-top: 68px; }

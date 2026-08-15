@@ -19,6 +19,10 @@ function mergeWithDefaults(savedContent) {
     sectionVisibility: { ...initialContent.sectionVisibility, ...savedContent.sectionVisibility },
     contact: { ...initialContent.contact, ...savedContent.contact },
     semesterResults: withItemVisibility(savedContent.semesterResults || initialContent.semesterResults),
+    projects: (savedContent.projects || initialContent.projects).map((project) => ({
+      ...project,
+      shortDescription: project.shortDescription || project.description || "",
+    })),
     experience: withItemVisibility(savedContent.experience || initialContent.experience),
     extraCurricularActivities: withItemVisibility(savedContent.extraCurricularActivities || initialContent.extraCurricularActivities),
   };

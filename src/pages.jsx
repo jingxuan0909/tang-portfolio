@@ -13,8 +13,8 @@ function ProjectMark({ project, index }) {
   return <span className="project-row__icon"><Icon size={28} weight="duotone" /></span>;
 }
 
-function ProjectList({ projects }) {
-  return <div className="project-list">{projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowRight size={22} /></a>)}</div>;
+function ProjectList({ projects, detailed = false }) {
+  return <div className={`project-list ${detailed ? "project-list--detailed" : ""}`}>{projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span className="project-row__copy"><strong>{project.title}</strong><small>{detailed ? project.description : project.shortDescription || project.description}</small>{detailed && project.tech?.length > 0 && <span className="project-row__tech" aria-label="Technologies">{project.tech.map((technology) => <span key={technology}>{technology}</span>)}</span>}</span><ArrowRight size={22} /></a>)}</div>;
 }
 
 function CredentialCards({ items }) {
@@ -104,7 +104,7 @@ export function ProjectsPage() {
   if (!content) return <LoadingScreen />;
   return <Layout><motion.section className="projects-page-hero" {...reveal}><div><span className="eyebrow">Projects</span><h1>Recent Projects</h1><p>A collection of software, cybersecurity, and interface design work. Select any project to view the full work.</p></div><a className="button button--primary projects-page__github" href={content.contact.github} target="_blank" rel="noreferrer"><GithubLogo size={20} weight="fill" /> Visit GitHub <ArrowSquareOut size={18} /></a></motion.section>
     <motion.section className="content-section projects-page" {...reveal}>
-      <ProjectList projects={content.projects} />
+      <ProjectList projects={content.projects} detailed />
     </motion.section>
   </Layout>;
 }
@@ -135,7 +135,7 @@ export function ResumePage() {
       <motion.div className="resume-block" {...reveal}><h2><GraduationCap /> Education</h2>{content.education.map((item, index) => <article className="timeline-item" key={item.id || `${item.institution}-${index}`}><span>{item.period}</span><h3>{item.institution}</h3><p>{item.qualification}</p></article>)}</motion.div>
       {sectionVisibility.experience && (currentEmployment.visible || recentExperience.length > 0) && <motion.div className="resume-block resume-block--wide" {...reveal}><h2>Experience</h2>{currentEmployment.visible && <article className="timeline-item timeline-item--current"><span>{currentEmployment.period || "Present"}</span><h3>{currentEmployment.company}</h3><strong>{currentEmployment.role}</strong><p>{currentEmployment.description}</p></article>}{recentExperience.map((item, index) => <article className="timeline-item" key={item.id || `${item.company}-${index}`}><span>{item.period}</span><h3>{item.company}</h3><strong>{item.role}</strong><p>{item.description}</p></article>)}</motion.div>}
       {sectionVisibility.extraCurricularActivities && recentActivities.length > 0 && <motion.div className="resume-block resume-block--wide" {...reveal}><h2><UsersThree /> Extra Curricular Activities</h2>{recentActivities.map((item, index) => <article className="timeline-item" key={item.id || `${item.club}-${index}`}><span>{item.period}</span><h3>{item.club}</h3><strong>{item.position}</strong><p>{item.description}</p></article>)}</motion.div>}
-      <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Briefcase /> Projects</h2><div className="resume-project-grid">{content.projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowSquareOut size={20} /></a>)}</div></motion.div>
+      <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Briefcase /> Projects</h2><div className="resume-project-grid">{content.projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span><strong>{project.title}</strong><small>{project.shortDescription || project.description}</small></span><ArrowSquareOut size={20} /></a>)}</div></motion.div>
       <motion.div className="resume-block" {...reveal}><h2>Skills</h2><div className="skill-cloud skill-cloud--large">{content.about.skills.map((skill, index) => <span key={`resume-skill-${index}`}>{skill}</span>)}</div></motion.div>
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Trophy /> Awards</h2><p className="credential-intro">Select an award to view the original letter.</p><CredentialCards items={recentAwards} /></motion.div>
       <motion.div className="resume-block resume-block--wide" {...reveal}><h2><Certificate /> Certificates</h2><p className="credential-intro">Select a certificate to view the verified document.</p><CredentialCards items={content.certifications} /></motion.div>

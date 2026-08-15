@@ -13,6 +13,7 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - The selected visual target is the Aurora Atelier ImageGen mock (`exec-a91a7215-4830-4085-882d-ad0dfa325b96.png`).
 - Public navigation is Home, About, Projects, Resume, and Contact. The private `/admin` route is absent from the top navigation but accessible through a discreet Admin button in the footer.
 - Home previews the first four projects and links to the full `/projects` page. Admin prepends every newly added project so the newest project appears first on Home, Projects, and Resume.
+- Projects store separate short Home descriptions and detailed Projects-page descriptions. The Projects page also shows each project's technologies, while Home and Resume remain compact.
 - Use the real portrait extracted from the user's resume in both the hero and footer.
 - Use the user-provided WhatsApp portrait as the canonical portrait; the homepage hero must display the original full color without a monochrome filter.
 - Show Semester Results, but never show Current CGPA or private identity/address fields.
@@ -31,3 +32,4 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Every Admin action that removes or deletes content uses the shared red danger-button treatment, including portrait, project logo, project, document, and list-item removal.
 - Skills, Projects, Semester Results, Current Employment, Experience, Extra Curricular Activities, Contact, Awards, Certificates, and Education are collapsible Admin sections and start closed to keep the workspace compact.
 - The Home hero portrait keeps its desktop dimensions but uses a smaller, balanced size on phones.
+- The mobile navigation opens as an opaque layer above the page content so menu labels never overlap the hero name.

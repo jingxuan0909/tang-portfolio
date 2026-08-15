@@ -46,6 +46,7 @@
     {
       "id": "innolink",
       "title": "innoLink Chatbot",
+      "shortDescription": "A Python chatbot designed to answer questions, retrieve useful information, and provide intelligent assistance.",
       "description": "A Python chatbot designed to answer questions, retrieve useful information, and provide intelligent assistance.",
       "logoUrl": "",
       "tech": [
@@ -58,6 +59,7 @@
     {
       "id": "mysafety",
       "title": "MySafety",
+      "shortDescription": "A Java-based safety system designed to improve awareness and provide quick access to emergency resources.",
       "description": "A Java-based safety system designed to improve awareness and provide quick access to emergency resources.",
       "logoUrl": "",
       "tech": [
@@ -70,6 +72,7 @@
     {
       "id": "fitness-app",
       "title": "Fitness Application",
+      "shortDescription": "A JavaFX fitness application that helps users plan workouts, monitor progress, and stay consistent.",
       "description": "A JavaFX fitness application that helps users plan workouts, monitor progress, and stay consistent.",
       "logoUrl": "",
       "tech": [
