@@ -75,7 +75,7 @@ export function ResetPasswordPage() {
 
   async function updatePassword(event) {
     event.preventDefault(); setMessage("");
-    if (password.length < 12) { setMessage("Use at least 12 characters for your new password."); return; }
+    if (password.length < 6) { setMessage("Supabase requires a password with at least 6 characters."); return; }
     if (password !== confirmPassword) { setMessage("Passwords do not match."); return; }
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
@@ -123,9 +123,9 @@ export function ResetPasswordPage() {
       </form>}
 
       {stage === "password" && <form onSubmit={updatePassword}>
-        <p>Your Gmail code was verified. Create a new password with at least 12 characters.</p>
-        <label className="admin-field"><span>New password</span><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" required /></label>
-        <label className="admin-field"><span>Confirm new password</span><input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" required /></label>
+        <p>Your Gmail code was verified. Create a new password and enter it again to confirm.</p>
+        <label className="admin-field"><span>New password</span><input type="password" minLength="6" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" required /></label>
+        <label className="admin-field"><span>Confirm new password</span><input type="password" minLength="6" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" required /></label>
         {message && <p className={positiveMessage ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}
         <button className="button button--primary" type="submit" disabled={busy}>{busy ? "Updating…" : "Reset password"}</button>
       </form>}
