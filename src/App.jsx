@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { AdminPage } from "./AdminPage";
 import { ContentProvider } from "./content-context";
-import { AboutPage, ContactPage, HomePage, ResumePage } from "./pages";
+import { AboutPage, ContactPage, HomePage, ProjectsPage, ResumePage } from "./pages";
 import { ResetPasswordPage } from "./ResetPasswordPage";
 
 function AnimatedRoutes() {
@@ -13,6 +13,7 @@ function AnimatedRoutes() {
     <Routes location={location}>
       <Route path="/" element={<HomePage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/projects" element={<ProjectsPage />} />
       <Route path="/resume" element={<ResumePage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/admin" element={<AdminPage />} />

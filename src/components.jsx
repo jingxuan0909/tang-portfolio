@@ -24,7 +24,7 @@ export function AuroraBackground({ compact = false }) {
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const links = [["/", "Home"], ["/about", "About"], ["/resume", "Resume"], ["/contact", "Contact"]];
+  const links = [["/", "Home"], ["/about", "About"], ["/projects", "Projects"], ["/resume", "Resume"], ["/contact", "Contact"]];
   return (
     <header className="site-header">
       <Link className="brand" to="/" aria-label="Tang Keng Hin home"><span>TKH</span></Link>
@@ -48,7 +48,7 @@ export function Footer() {
         <img src={profile.portraitUrl || "/assets/tang-keng-hin.jpg"} alt="Tang Keng Hin" />
         <div><strong>{profile.name}</strong><span>{profile.role}</span><p>Building secure, reliable, and meaningful technology.</p></div>
       </div>
-      <div className="footer__column"><span className="micro-label">Explore</span><Link to="/">Home</Link><Link to="/about">About</Link><Link to="/resume">Resume</Link><Link to="/contact">Contact</Link></div>
+      <div className="footer__column"><span className="micro-label">Explore</span><Link to="/">Home</Link><Link to="/about">About</Link><Link to="/projects">Projects</Link><Link to="/resume">Resume</Link><Link to="/contact">Contact</Link></div>
       <div className="footer__column footer__connect"><span className="micro-label">Connect</span><div>
         <a href={contact.github} target="_blank" rel="noreferrer" aria-label="GitHub"><GithubLogo size={24} weight="fill" /></a>
         {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn"><LinkedinLogo size={24} weight="fill" /></a>}

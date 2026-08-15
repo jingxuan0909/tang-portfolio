@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ArrowRight, ArrowSquareOut, Barbell, Briefcase, ChatCircleDots, ShieldCheck, Trophy, GraduationCap, Certificate, Sparkle, UsersThree } from "@phosphor-icons/react";
+import { ArrowRight, ArrowSquareOut, Barbell, Briefcase, ChatCircleDots, GithubLogo, ShieldCheck, Trophy, GraduationCap, Certificate, Sparkle, UsersThree } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { ContactButtons, Layout, LoadingScreen, PageIntro, reveal } from "./components";
 import { useContent } from "./content-context";
@@ -11,6 +11,10 @@ function ProjectMark({ project, index }) {
   if (project.logoUrl) return <span className="project-row__icon project-row__icon--image"><img src={project.logoUrl} alt={`${project.title} logo`} /></span>;
   const Icon = projectIcons[index % projectIcons.length];
   return <span className="project-row__icon"><Icon size={28} weight="duotone" /></span>;
+}
+
+function ProjectList({ projects }) {
+  return <div className="project-list">{projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowRight size={22} /></a>)}</div>;
 }
 
 function CredentialCards({ items }) {
@@ -58,8 +62,8 @@ export function HomePage() {
         </motion.div>
         <motion.div className="project-preview" {...reveal} transition={{ ...reveal.transition, delay: .1 }}>
           <span className="eyebrow">Projects</span><h2>Recent Projects</h2>
-          <div className="project-list">{projects.map((project, index) => <a href={project.url} target="_blank" rel="noreferrer" className="project-row" key={project.id}><ProjectMark project={project} index={index} /><span><strong>{project.title}</strong><small>{project.description}</small></span><ArrowRight size={22} /></a>)}</div>
-          <a className="text-link" href={contact.github} target="_blank" rel="noreferrer">View all projects <ArrowRight /></a>
+          <ProjectList projects={projects.slice(0, 4)} />
+          <Link className="text-link" to="/projects">View all projects <ArrowRight /></Link>
         </motion.div>
       </section>
 
@@ -93,6 +97,16 @@ export function HomePage() {
       </motion.section>
     </Layout>
   );
+}
+
+export function ProjectsPage() {
+  const { content } = useContent();
+  if (!content) return <LoadingScreen />;
+  return <Layout><motion.section className="projects-page-hero" {...reveal}><div><span className="eyebrow">Projects</span><h1>Recent Projects</h1><p>A collection of software, cybersecurity, and interface design work. Select any project to view the full work.</p></div><a className="button button--primary projects-page__github" href={content.contact.github} target="_blank" rel="noreferrer"><GithubLogo size={20} weight="fill" /> Visit GitHub <ArrowSquareOut size={18} /></a></motion.section>
+    <motion.section className="content-section projects-page" {...reveal}>
+      <ProjectList projects={content.projects} />
+    </motion.section>
+  </Layout>;
 }
 
 export function AboutPage() {
