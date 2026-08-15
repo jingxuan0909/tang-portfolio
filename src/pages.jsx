@@ -62,7 +62,7 @@ export function HomePage() {
         </motion.div>
         <motion.div className="project-preview" {...reveal} transition={{ ...reveal.transition, delay: .1 }}>
           <span className="eyebrow">Projects</span><h2>Recent Projects</h2>
-          <ProjectList projects={projects.slice(0, 4)} />
+          <ProjectList projects={projects} />
           <Link className="text-link" to="/projects">View all projects <ArrowRight /></Link>
         </motion.div>
       </section>
