@@ -1,19 +1,24 @@
-import { useEffect, useId, useState } from "react";
-import { ArrowLeft, ArrowSquareOut, CaretDown, Eye, EyeSlash, FloppyDisk, PencilSimple, Plus, SignOut, Trash, UploadSimple, X } from "@phosphor-icons/react";
-import { Link } from "react-router-dom";
+import { createContext, useContext, useEffect, useId, useState } from "react";
+import { ArrowLeft, ArrowSquareOut, CaretDown, Eye, EyeSlash, FloppyDisk, LockKey, PencilSimple, Plus, SignOut, Trash, UploadSimple, UserFocus, X } from "@phosphor-icons/react";
+import { Link, useNavigate } from "react-router-dom";
 import { useContent } from "./content-context";
 import { sortRecent } from "./content-utils";
 import { isSupabaseConfigured, supabase } from "./supabase";
 
 const DEFAULT_PORTRAIT = "/assets/default-avatar.png";
+const ADMIN_OTP_VERIFIED_KEY = "tang-admin-otp-verified";
+const RECOVERY_EMAIL_KEY = "tang-admin-recovery-email";
+const AdminReadOnlyContext = createContext(false);
 
 function Field({ label, value, onChange, multiline = false, type = "text", autoComplete, required = false }) {
+  const readOnly = useContext(AdminReadOnlyContext);
   const Component = multiline ? "textarea" : "input";
-  return <label className="admin-field"><span>{label}</span><Component type={multiline ? undefined : type} value={value ?? ""} onChange={(event) => onChange(event.target.value)} rows={multiline ? 4 : undefined} autoComplete={autoComplete} required={required} /></label>;
+  return <label className="admin-field"><span>{label}</span><Component type={multiline ? undefined : type} value={value ?? ""} onChange={(event) => onChange(event.target.value)} rows={multiline ? 4 : undefined} autoComplete={autoComplete} required={required} disabled={readOnly} /></label>;
 }
 
 function VisibilityToggle({ checked, onChange, visibleLabel = "Visible", hiddenLabel = "Hidden" }) {
-  return <label className="admin-toggle"><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} /><span aria-hidden="true" /><strong>{checked ? visibleLabel : hiddenLabel}</strong></label>;
+  const readOnly = useContext(AdminReadOnlyContext);
+  return <label className="admin-toggle"><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} disabled={readOnly} /><span aria-hidden="true" /><strong>{checked ? visibleLabel : hiddenLabel}</strong></label>;
 }
 
 function EditorModal({ title, confirmLabel, confirmDisabled = false, onCancel, onConfirm, children }) {
@@ -114,6 +119,7 @@ function normalizeExternalUrl(value) {
 }
 
 function PortraitEditor({ value, onChange, onUploadComplete, setMessage }) {
+  const readOnly = useContext(AdminReadOnlyContext);
   const [uploading, setUploading] = useState(false);
   async function upload(file) {
     if (!file) return;
@@ -129,10 +135,11 @@ function PortraitEditor({ value, onChange, onUploadComplete, setMessage }) {
     onChange(DEFAULT_PORTRAIT);
     setMessage("Portrait removed successfully. Select Save changes to publish the default avatar.");
   }
-  return <div className="admin-portrait"><div className="admin-portrait__preview"><img src={value || DEFAULT_PORTRAIT} alt="Current portrait preview" /></div><div className="admin-portrait__controls"><strong>Current portrait</strong><p>Select a real JPG, PNG, or WebP file from your device. Remove portrait switches the website to your white default avatar.</p><div className="admin-portrait__actions"><label className="upload-button"><UploadSimple /> {uploading ? "Uploading…" : "Choose and upload portrait"}<input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => upload(event.target.files?.[0])} /></label><button className="delete-button" type="button" onClick={remove} disabled={value === DEFAULT_PORTRAIT}><Trash /> Remove portrait</button></div></div></div>;
+  return <div className="admin-portrait"><div className="admin-portrait__preview"><img src={value || DEFAULT_PORTRAIT} alt="Current portrait preview" /></div><div className="admin-portrait__controls"><strong>Current portrait</strong><p>Select a real JPG, PNG, or WebP file from your device. Remove portrait switches the website to your white default avatar.</p><div className="admin-portrait__actions"><label className="upload-button"><UploadSimple /> {uploading ? "Uploading…" : "Choose and upload portrait"}<input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled={readOnly || uploading} onChange={(event) => upload(event.target.files?.[0])} /></label><button className="delete-button" type="button" onClick={remove} disabled={readOnly || value === DEFAULT_PORTRAIT}><Trash /> Remove portrait</button></div></div></div>;
 }
 
 function ProjectEditor({ items, onChange, onUploadComplete, setMessage, defaultUrl }) {
+  const readOnly = useContext(AdminReadOnlyContext);
   const [editor, setEditor] = useState(null);
   const [uploading, setUploading] = useState("");
   const openAdd = () => setEditor({ mode: "add", index: -1, value: { id: crypto.randomUUID(), title: "", shortDescription: "", description: "", tech: [], url: defaultUrl, logoUrl: "" } });
@@ -164,12 +171,13 @@ function ProjectEditor({ items, onChange, onUploadComplete, setMessage, defaultU
     } catch (error) { setMessage(error.message); } finally { setUploading(""); }
   }
   return <AdminCard title="Projects" description="Updates the Home, Projects, and Resume pages. New projects appear first. Upload a real logo image or keep the default Phosphor icon." collapsible actions={<button type="button" onClick={openAdd}><Plus /> Add project</button>}>
-    <div className="admin-entry-list">{items.map((item, index) => { const uploadId = item.id || String(index); return <article className="admin-entry admin-project" key={uploadId}><div className="admin-project-summary"><div className={`admin-project-logo ${item.logoUrl ? "" : "admin-project-logo--empty"}`}>{item.logoUrl ? <img src={item.logoUrl} alt={`${item.title} logo preview`} /> : <span>No logo</span>}</div><div className="admin-entry__details admin-project__details"><span className="admin-entry__primary"><small>Title</small>{item.title}</span><span className="admin-project__url" title={item.url}><small>Project URL</small>{item.url}</span><span className="admin-project__description" title={item.shortDescription || item.description}><small>Home description</small>{item.shortDescription || item.description}</span><span className="admin-project__description admin-project__description--detailed" title={item.description}><small>Projects page description</small>{item.description}</span><span className="admin-project__technologies" title={(item.tech || []).join(", ")}><small>Technologies</small>{(item.tech || []).join(", ")}</span></div></div><div className="admin-project__actions" aria-label={`Actions for ${item.title}`}><div className="admin-project__action-row"><button type="button" onClick={() => openEdit(index)}><PencilSimple /> Edit</button><label className="upload-button"><UploadSimple /> {uploading === uploadId ? "Uploading..." : item.logoUrl ? "Replace logo" : "Upload logo"}<input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} onChange={(event) => upload(index, event.target.files?.[0])} /></label>{item.logoUrl && <a href={item.logoUrl} target="_blank" rel="noreferrer"><ArrowSquareOut /> View logo</a>}</div><div className="admin-project__action-row admin-project__action-row--danger">{item.logoUrl && <button type="button" className="delete-button" onClick={() => removeLogo(index)}><Trash /> Remove logo</button>}<button type="button" className="delete-button" onClick={() => remove(index)}><Trash /> Delete project</button></div></div></article>; })}</div>
+    <div className="admin-entry-list">{items.map((item, index) => { const uploadId = item.id || String(index); return <article className="admin-entry admin-project" key={uploadId}><div className="admin-project-summary"><div className={`admin-project-logo ${item.logoUrl ? "" : "admin-project-logo--empty"}`}>{item.logoUrl ? <img src={item.logoUrl} alt={`${item.title} logo preview`} /> : <span>No logo</span>}</div><div className="admin-entry__details admin-project__details"><span className="admin-entry__primary"><small>Title</small>{item.title}</span><span className="admin-project__url" title={item.url}><small>Project URL</small>{item.url}</span><span className="admin-project__description" title={item.shortDescription || item.description}><small>Home description</small>{item.shortDescription || item.description}</span><span className="admin-project__description admin-project__description--detailed" title={item.description}><small>Projects page description</small>{item.description}</span><span className="admin-project__technologies" title={(item.tech || []).join(", ")}><small>Technologies</small>{(item.tech || []).join(", ")}</span></div></div><div className="admin-project__actions" aria-label={`Actions for ${item.title}`}><div className="admin-project__action-row"><button type="button" onClick={() => openEdit(index)}><PencilSimple /> Edit</button><label className="upload-button"><UploadSimple /> {uploading === uploadId ? "Uploading..." : item.logoUrl ? "Replace logo" : "Upload logo"}<input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled={readOnly || Boolean(uploading)} onChange={(event) => upload(index, event.target.files?.[0])} /></label>{item.logoUrl && <a href={item.logoUrl} target="_blank" rel="noreferrer"><ArrowSquareOut /> View logo</a>}</div><div className="admin-project__action-row admin-project__action-row--danger">{item.logoUrl && <button type="button" className="delete-button" onClick={() => removeLogo(index)}><Trash /> Remove logo</button>}<button type="button" className="delete-button" onClick={() => remove(index)}><Trash /> Delete project</button></div></div></article>; })}</div>
     {editor && <EditorModal title={`${editor.mode === "add" ? "Add" : "Edit"} Project`} confirmLabel={editor.mode === "add" ? "Add" : "Update"} confirmDisabled={!editor.value.title.trim()} onCancel={() => setEditor(null)} onConfirm={confirm}>{projectFields.map((field, index) => <Field key={field.key} label={field.label} multiline={field.multiline} value={field.format ? field.format(editor.value[field.key]) : editor.value[field.key]} onChange={(value) => setEditor({ ...editor, value: { ...editor.value, [field.key]: field.parse ? field.parse(value) : value } })} required={index === 0} />)}</EditorModal>}
   </AdminCard>;
 }
 
 function DocumentEditor({ title, items, onChange, onUploadComplete, setMessage }) {
+  const readOnly = useContext(AdminReadOnlyContext);
   const [editor, setEditor] = useState(null);
   const [uploading, setUploading] = useState("");
   const fields = [{ key: "title", label: "Title" }, { key: "issuer", label: "Issuer" }, { key: "date", label: "Date / period" }];
@@ -198,38 +206,126 @@ function DocumentEditor({ title, items, onChange, onUploadComplete, setMessage }
     } catch (error) { setMessage(error.message); } finally { setUploading(""); }
   }
   return <AdminCard title={title} description="Add or edit the details in a dialog, then upload the real PDF/image from its card." collapsible actions={<button type="button" onClick={openAdd}><Plus /> Add</button>}>
-    <div className="admin-entry-list">{items.map((item, index) => { const uploadId = item.id || String(index); return <article className="admin-entry admin-document" key={uploadId}><div className="admin-entry__details"><span className="admin-entry__primary"><small>Title</small>{item.title}</span><span><small>Issuer</small>{item.issuer}</span><span><small>Date / period</small>{item.date}</span><span><small>File</small>{item.url ? "Uploaded" : "Not uploaded"}</span></div><div className="admin-document__actions"><button type="button" onClick={() => openEdit(index)}><PencilSimple /> Edit</button><label className="upload-button"><UploadSimple /> {uploading === uploadId ? "Uploading…" : item.url ? "Replace file" : "Upload PDF / image"}<input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} onChange={(event) => upload(index, event.target.files?.[0])} /></label>{item.url && <a href={item.url} target="_blank" rel="noreferrer"><ArrowSquareOut /> View file</a>}<button type="button" className="delete-button" onClick={() => remove(index)}><Trash /> Delete</button></div></article>; })}</div>
+    <div className="admin-entry-list">{items.map((item, index) => { const uploadId = item.id || String(index); return <article className="admin-entry admin-document" key={uploadId}><div className="admin-entry__details"><span className="admin-entry__primary"><small>Title</small>{item.title}</span><span><small>Issuer</small>{item.issuer}</span><span><small>Date / period</small>{item.date}</span><span><small>File</small>{item.url ? "Uploaded" : "Not uploaded"}</span></div><div className="admin-document__actions"><button type="button" onClick={() => openEdit(index)}><PencilSimple /> Edit</button><label className="upload-button"><UploadSimple /> {uploading === uploadId ? "Uploading…" : item.url ? "Replace file" : "Upload PDF / image"}<input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" disabled={readOnly || Boolean(uploading)} onChange={(event) => upload(index, event.target.files?.[0])} /></label>{item.url && <a href={item.url} target="_blank" rel="noreferrer"><ArrowSquareOut /> View file</a>}<button type="button" className="delete-button" onClick={() => remove(index)}><Trash /> Delete</button></div></article>; })}</div>
     {editor && <EditorModal title={`${editor.mode === "add" ? "Add" : "Edit"} ${title}`} confirmLabel={editor.mode === "add" ? "Add" : "Update"} confirmDisabled={!editor.value.title.trim()} onCancel={() => setEditor(null)} onConfirm={confirm}>{fields.map((field, index) => <Field key={field.key} label={field.label} value={editor.value[field.key]} onChange={(value) => setEditor({ ...editor, value: { ...editor.value, [field.key]: value } })} required={index === 0} />)}</EditorModal>}
   </AdminCard>;
 }
 
 export function AdminPage() {
   const { content, setContent, refresh } = useContent();
+  const navigate = useNavigate();
   const [session, setSession] = useState({ loading: true, authenticated: false });
   const [draft, setDraft] = useState(null);
   const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [loginStep, setLoginStep] = useState("credentials");
+  const [pendingLoginEmail, setPendingLoginEmail] = useState("");
+  const [loginOtp, setLoginOtp] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [resendAvailableIn, setResendAvailableIn] = useState(0);
+  const [guestMode, setGuestMode] = useState(false);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!supabase) { setSession({ loading: false, authenticated: false }); return undefined; }
-    supabase.auth.getSession().then(({ data }) => setSession({ loading: false, authenticated: Boolean(data.session) }));
-    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => setSession({ loading: false, authenticated: Boolean(nextSession) }));
-    return () => data.subscription.unsubscribe();
+    let active = true;
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!active) return;
+      const otpVerified = sessionStorage.getItem(ADMIN_OTP_VERIFIED_KEY) === "true";
+      if (data.session && !otpVerified) {
+        await supabase.auth.signOut({ scope: "local" });
+        if (active) setSession({ loading: false, authenticated: false });
+        return;
+      }
+      setSession({ loading: false, authenticated: Boolean(data.session && otpVerified) });
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!active) return;
+      const otpVerified = sessionStorage.getItem(ADMIN_OTP_VERIFIED_KEY) === "true";
+      setSession({ loading: false, authenticated: Boolean(nextSession && otpVerified) });
+    });
+    return () => { active = false; data.subscription.unsubscribe(); };
   }, []);
+  useEffect(() => {
+    if (resendAvailableIn <= 0) return undefined;
+    const timer = window.setInterval(() => setResendAvailableIn((seconds) => Math.max(0, seconds - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [resendAvailableIn]);
   useEffect(() => { if (content && !draft) setDraft(structuredClone(content)); }, [content, draft]);
   useEffect(() => { if (!message || !session.authenticated) return undefined; const timer = window.setTimeout(() => setMessage(""), 6000); return () => window.clearTimeout(timer); }, [message, session.authenticated]);
 
   async function login(event) {
-    event.preventDefault(); setMessage("");
-    try { const { error } = await supabase.auth.signInWithPassword(credentials); if (error) throw error; setSession({ loading: false, authenticated: true }); setCredentials({ email: "", password: "" }); } catch (error) { setMessage(error.message); }
+    event.preventDefault(); setMessage(""); setAuthBusy(true);
+    const email = credentials.email.trim();
+    try {
+      const { error: passwordError } = await supabase.auth.signInWithPassword({ email, password: credentials.password });
+      if (passwordError) throw passwordError;
+      await supabase.auth.signOut({ scope: "local" });
+      const { error: otpError } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+      if (otpError) throw otpError;
+      setPendingLoginEmail(email);
+      setCredentials({ email, password: "" });
+      setLoginOtp("");
+      setLoginStep("otp");
+      setResendAvailableIn(60);
+      setMessage("A 6-digit sign-in code was sent to your Gmail.");
+    } catch (error) {
+      await supabase.auth.signOut({ scope: "local" });
+      setMessage(error.message);
+    } finally { setAuthBusy(false); }
   }
-  async function logout() { await supabase.auth.signOut(); setSession({ loading: false, authenticated: false }); setDraft(null); }
+  async function verifyLoginOtp(event) {
+    event.preventDefault(); setMessage("");
+    if (!/^\d{6}$/.test(loginOtp)) { setMessage("Enter the complete 6-digit code."); return; }
+    setAuthBusy(true);
+    sessionStorage.setItem(ADMIN_OTP_VERIFIED_KEY, "true");
+    const { data, error } = await supabase.auth.verifyOtp({ email: pendingLoginEmail, token: loginOtp, type: "email" });
+    if (error || !data.session) {
+      sessionStorage.removeItem(ADMIN_OTP_VERIFIED_KEY);
+      setMessage(error?.message || "The code is invalid or has expired.");
+      setAuthBusy(false);
+      return;
+    }
+    setSession({ loading: false, authenticated: true });
+    setCredentials({ email: "", password: "" });
+    setLoginOtp("");
+    setMessage("Two-step verification completed successfully.");
+    setAuthBusy(false);
+  }
+  async function resendLoginOtp() {
+    if (resendAvailableIn > 0 || authBusy) return;
+    setMessage(""); setAuthBusy(true);
+    const { error } = await supabase.auth.signInWithOtp({ email: pendingLoginEmail, options: { shouldCreateUser: false } });
+    setMessage(error ? error.message : "A new 6-digit sign-in code was sent to your Gmail.");
+    if (!error) setResendAvailableIn(60);
+    setAuthBusy(false);
+  }
+  async function logout() {
+    sessionStorage.removeItem(ADMIN_OTP_VERIFIED_KEY);
+    await supabase.auth.signOut();
+    setSession({ loading: false, authenticated: false });
+    setDraft(null);
+    setLoginStep("credentials");
+  }
   async function requestPasswordReset() {
     setMessage(""); const email = credentials.email.trim();
     if (!email) { setMessage("Enter your Admin email first."); return; }
+    setAuthBusy(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
-    setMessage(error ? error.message : "Password recovery email sent. Use only the newest email link.");
+    setAuthBusy(false);
+    if (error) { setMessage(error.message); return; }
+    sessionStorage.setItem(RECOVERY_EMAIL_KEY, email);
+    navigate("/reset-password", { state: { email, codeSent: true } });
+  }
+  function openGuestPreview() { setGuestMode(true); setMessage(""); }
+  function closeGuestPreview() { setGuestMode(false); setMessage(""); }
+  function blockGuestInteraction(event) {
+    if (!guestMode || event.target.closest(".admin-collapse-button, [data-guest-allowed='true']")) return;
+    if (event.target.closest("button, a, input, textarea, .admin-toggle, .upload-button")) {
+      event.preventDefault();
+      event.stopPropagation();
+      setMessage("Guest Preview is read-only. Sign in as Admin to use this control.");
+    }
   }
   async function persistContent(nextDraft, successMessage = "Changes saved successfully.") {
     const normalizedDraft = {
@@ -249,13 +345,41 @@ export function AdminPage() {
   const setRecentArray = (section, dateKey) => (items) => setDraft((current) => ({ ...current, [section]: sortRecent(items, dateKey) }));
 
   if (session.loading || !content) return <div className="admin-loading">Checking secure session…</div>;
-  if (!session.authenticated) return <main className="admin-login"><div className="admin-login__panel"><Link to="/"><ArrowLeft /> Back to portfolio</Link><span className="eyebrow">Private access</span><h1>Content Admin</h1><p>Sign in with your Supabase Admin account.</p>{!isSupabaseConfigured && <p className="admin-message admin-message--error">Supabase environment variables are missing.</p>}<form onSubmit={login} autoComplete="off"><Field label="Email" type="email" autoComplete="off" value={credentials.email} onChange={(email) => setCredentials({ ...credentials, email })} /><Field label="Password" type="password" autoComplete="off" value={credentials.password} onChange={(password) => setCredentials({ ...credentials, password })} />{message && <p className={message.includes("sent") ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}<button className="button button--primary" type="submit" disabled={!isSupabaseConfigured}>Sign in</button><button className="button button--ghost" type="button" onClick={requestPasswordReset} disabled={!isSupabaseConfigured}>Forgot password?</button></form></div></main>;
+  if (!session.authenticated && !guestMode) return <main className="admin-login"><div className="admin-login__panel">
+    <Link to="/"><ArrowLeft /> Back to portfolio</Link>
+    <span className="eyebrow">Private access</span>
+    <h1>Content Admin</h1>
+    {loginStep === "credentials" ? <>
+      <p>Sign in with your password, then verify the 6-digit code sent to your Gmail.</p>
+      {!isSupabaseConfigured && <p className="admin-message admin-message--error">Supabase environment variables are missing.</p>}
+      <form onSubmit={login} autoComplete="off">
+        <Field label="Email" type="email" autoComplete="off" value={credentials.email} onChange={(email) => setCredentials({ ...credentials, email })} required />
+        <Field label="Password" type="password" autoComplete="off" value={credentials.password} onChange={(password) => setCredentials({ ...credentials, password })} required />
+        {message && <p className="admin-message admin-message--error">{message}</p>}
+        <button className="button button--primary" type="submit" disabled={!isSupabaseConfigured || authBusy}>{authBusy ? "Checking…" : "Sign in"}</button>
+        <button className="button button--ghost" type="button" onClick={requestPasswordReset} disabled={!isSupabaseConfigured || authBusy}>Forgot password?</button>
+        <div className="admin-login__divider"><span>Guest access</span></div>
+        <button className="button button--guest" type="button" onClick={openGuestPreview}><UserFocus size={20} /> Explore Admin as Guest</button>
+        <p className="admin-login__guest-note">View the complete Admin workspace safely. Editing, uploading, saving, and deleting are locked.</p>
+      </form>
+    </> : <>
+      <p>We sent a one-time code to <strong>{pendingLoginEmail}</strong>. Enter it below to finish signing in.</p>
+      <form onSubmit={verifyLoginOtp}>
+        <label className="admin-field"><span>6-digit verification code</span><input className="admin-otp-input" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength="6" pattern="[0-9]{6}" value={loginOtp} onChange={(event) => setLoginOtp(event.target.value.replace(/\D/g, "").slice(0, 6))} autoFocus /></label>
+        {message && <p className={message.includes("sent") ? "admin-message" : "admin-message admin-message--error"}>{message}</p>}
+        <button className="button button--primary" type="submit" disabled={authBusy || loginOtp.length !== 6}>{authBusy ? "Verifying…" : "Verify and enter Admin"}</button>
+        <button className="button button--ghost" type="button" onClick={resendLoginOtp} disabled={authBusy || resendAvailableIn > 0}>{resendAvailableIn > 0 ? `Resend code in ${resendAvailableIn}s` : "Resend code"}</button>
+        <button className="admin-login__text-button" type="button" onClick={() => { setLoginStep("credentials"); setLoginOtp(""); setMessage(""); }}>Use a different account</button>
+      </form>
+    </>}
+  </div></main>;
   if (!draft) return null;
 
   const successMessage = message.toLowerCase().includes("successfully") || message.toLowerCase().includes("sent");
-  return <main className="admin-page">
-    <header className="admin-header"><div><span className="eyebrow">Private workspace</span><h1>Portfolio Content</h1></div><div><button className="button button--primary" type="submit" form="admin-content-form" disabled={saving}><FloppyDisk /> {saving ? "Saving…" : "Save changes"}</button><Link className="button button--ghost" to="/"><ArrowLeft /> View site</Link><button className="button button--ghost" type="button" onClick={logout}><SignOut /> Log out</button></div></header>
-    {message && <div className={`admin-toast ${successMessage ? "" : "admin-toast--error"}`} role="status"><span>{message}</span><button type="button" onClick={() => setMessage("")} aria-label="Dismiss message"><X /></button></div>}
+  return <AdminReadOnlyContext.Provider value={guestMode}><main className={`admin-page ${guestMode ? "admin-page--guest" : ""}`} onClickCapture={blockGuestInteraction} onSubmitCapture={blockGuestInteraction}>
+    <header className="admin-header"><div><span className="eyebrow">{guestMode ? "Read-only demonstration" : "Private workspace"}</span><h1>{guestMode ? "Admin Guest Preview" : "Portfolio Content"}</h1></div><div><button className="button button--primary" type="submit" form="admin-content-form" disabled={saving || guestMode} aria-disabled={guestMode}><FloppyDisk /> {saving ? "Saving…" : "Save changes"}</button><Link className="button button--ghost" data-guest-allowed="true" to="/"><ArrowLeft /> View site</Link>{guestMode ? <button className="button button--ghost guest-exit" data-guest-allowed="true" type="button" onClick={closeGuestPreview}><ArrowLeft /> Exit preview</button> : <button className="button button--ghost" type="button" onClick={logout}><SignOut /> Log out</button>}</div></header>
+    {guestMode && <aside className="admin-guest-banner"><LockKey size={24} weight="fill" /><div><strong>Guest Preview — view only</strong><p>This is a live demonstration of the portfolio CMS. Controls marked with × are locked; only an authenticated Admin can change Supabase content or files.</p></div></aside>}
+    {message && <div className={`admin-toast ${successMessage ? "" : "admin-toast--error"}`} role="status"><span>{message}</span><button type="button" data-guest-allowed="true" onClick={() => setMessage("")} aria-label="Dismiss message"><X /></button></div>}
     <form id="admin-content-form" className="admin-form" onSubmit={save}>
       <section className="admin-card"><h2>Profile</h2><PortraitEditor value={draft.profile.portraitUrl} setMessage={setMessage} onChange={(value) => updateSection("profile", "portraitUrl", value)} onUploadComplete={(value) => persistContent({ ...draft, profile: { ...draft.profile, portraitUrl: value } }, "Portrait uploaded and published successfully.")} /><div className="admin-grid"><Field label="Name" value={draft.profile.name} onChange={(value) => updateSection("profile", "name", value)} /><Field label="Role" value={draft.profile.role} onChange={(value) => updateSection("profile", "role", value)} /><Field label="Hero eyebrow" value={draft.profile.eyebrow} onChange={(value) => updateSection("profile", "eyebrow", value)} /><Field label="Availability" value={draft.profile.availability} onChange={(value) => updateSection("profile", "availability", value)} /><Field label="Intro" multiline value={draft.profile.intro} onChange={(value) => updateSection("profile", "intro", value)} /><Field label="Availability detail" multiline value={draft.profile.availabilityDetail} onChange={(value) => updateSection("profile", "availabilityDetail", value)} /></div></section>
       <section className="admin-card"><h2>About heading</h2><Field label="Heading" value={draft.about.heading} onChange={(value) => updateSection("about", "heading", value)} /></section>
@@ -271,5 +395,5 @@ export function AdminPage() {
       <DocumentEditor title="Awards" items={sortRecent(draft.awards, "date")} setMessage={setMessage} onChange={setRecentArray("awards", "date")} onUploadComplete={(items) => persistContent({ ...draft, awards: sortRecent(items, "date") }, "Award document uploaded and published successfully.")} />
       <DocumentEditor title="Certificates" items={draft.certifications} setMessage={setMessage} onChange={setArray("certifications")} onUploadComplete={(items) => persistContent({ ...draft, certifications: items }, "Certificate uploaded and published successfully.")} />
     </form>
-  </main>;
+  </main></AdminReadOnlyContext.Provider>;
 }
