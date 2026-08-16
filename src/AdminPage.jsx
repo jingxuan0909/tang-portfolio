@@ -51,8 +51,11 @@ function EditorModal({ title, confirmLabel, confirmDisabled = false, confirmDang
     const animationFrame = window.requestAnimationFrame(focusFirstControl);
 
     function handleKeyDown(event) {
-      if (event.key === "Escape") {
+      // Capture Escape at the window level before an input or editor can stop it.
+      const isEscape = event.key === "Escape" || event.key === "Esc" || event.code === "Escape";
+      if (isEscape) {
         event.preventDefault();
+        event.stopPropagation();
         cancelRef.current();
         return;
       }
@@ -72,10 +75,11 @@ function EditorModal({ title, confirmLabel, confirmDisabled = false, confirmDang
       }
     }
 
-    document.addEventListener("keydown", handleKeyDown);
+    // Capture mode makes the keyboard behavior reliable inside every form field.
+    window.addEventListener("keydown", handleKeyDown, true);
     return () => {
       window.cancelAnimationFrame(animationFrame);
-      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown, true);
       if (appRoot) {
         appRoot.inert = Boolean(previousInert);
         if (previousAriaHidden === null) appRoot.removeAttribute("aria-hidden");

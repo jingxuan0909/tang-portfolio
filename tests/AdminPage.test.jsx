@@ -121,9 +121,29 @@ describe("Admin authentication and editing", () => {
     await user.click(addButton);
     const dialog = screen.getByRole("dialog", { name: /Add About paragraphs/i });
     await waitFor(() => expect(within(dialog).getByLabelText("Paragraph")).toHaveFocus());
-    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent.keyDown(within(dialog).getByLabelText("Paragraph"), { key: "Escape", code: "Escape" });
     await waitFor(() => expect(dialog).not.toBeInTheDocument());
     expect(addButton).toHaveFocus();
+  });
+
+  it("closes Edit Project with Escape from an input and restores its Edit button", async () => {
+    setAuthenticatedSession();
+    const user = userEvent.setup();
+    renderAdmin();
+    await screen.findByText("Portfolio Content");
+
+    const projectsCard = screen.getByRole("heading", { name: "Projects" }).closest("section");
+    await user.click(within(projectsCard).getByRole("button", { name: /Open/i }));
+    const editButton = within(projectsCard).getAllByRole("button", { name: "Edit" })[0];
+    await user.click(editButton);
+
+    const dialog = screen.getByRole("dialog", { name: "Edit Project" });
+    const titleInput = within(dialog).getByLabelText("Title");
+    await waitFor(() => expect(titleInput).toHaveFocus());
+    fireEvent.keyDown(titleInput, { key: "Escape", code: "Escape" });
+
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    expect(editButton).toHaveFocus();
   });
 
   it("edits a skill and hides the Semester Results section without deleting it", async () => {
